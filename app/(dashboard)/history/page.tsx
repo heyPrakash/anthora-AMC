@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { supabase, type ServiceHistory, type Contract, type Technician, type Customer } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 import { Search, Download, Calendar, CheckCircle2, XCircle, Clock } from "lucide-react"
 
 interface ServiceRecord extends ServiceHistory {
@@ -60,6 +61,7 @@ function getStatusBadge(status: string) {
 }
 
 export default function ServiceHistoryPage() {
+  const { user } = useAuth()
   const [serviceRecords, setServiceRecords] = useState<ServiceRecord[]>([])
   const [filteredRecords, setFilteredRecords] = useState<ServiceRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -69,10 +71,12 @@ export default function ServiceHistoryPage() {
   useEffect(() => {
     const loadServiceHistory = async () => {
       try {
+        if (!user?.id) return
+
         const { data: historyData } = await supabase.from('service_history').select('*')
-        const { data: contractsData } = await supabase.from('contracts').select('*')
-        const { data: techniciansData } = await supabase.from('technicians').select('*')
-        const { data: customersData } = await supabase.from('customers').select('*')
+        const { data: contractsData } = await supabase.from('contracts').select('*').eq('user_id', user.id)
+        const { data: techniciansData } = await supabase.from('technicians').select('*').eq('user_id', user.id)
+        const { data: customersData } = await supabase.from('customers').select('*').eq('user_id', user.id)
 
         const records = (historyData as ServiceHistory[]).map(record => {
           const contract = (contractsData as Contract[])?.find(c => c.id === record.contract_id)
@@ -98,7 +102,7 @@ export default function ServiceHistoryPage() {
     }
 
     loadServiceHistory()
-  }, [])
+  }, [user?.id])
 
   const handleFilter = () => {
     let filtered = serviceRecords

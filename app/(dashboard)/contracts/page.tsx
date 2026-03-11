@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { supabase, type Contract, type Customer, getDaysUntilService } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 import { Plus, Search, MoreHorizontal, Eye, Edit, Filter, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -58,6 +59,7 @@ function getServiceTypeBadge(type: string) {
 }
 
 export default function ContractsPage() {
+  const { user } = useAuth()
   const [contracts, setContracts] = useState<ContractDisplay[]>([])
   const [filteredContracts, setFilteredContracts] = useState<ContractDisplay[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,15 +70,19 @@ export default function ContractsPage() {
   useEffect(() => {
     const loadContracts = async () => {
       try {
+        if (!user?.id) return
+
         const { data: contractsData, error: contractsError } = await supabase
           .from('contracts')
           .select('*')
+          .eq('user_id', user.id)
 
         if (contractsError) throw contractsError
 
         const { data: customersData } = await supabase
           .from('customers')
           .select('*')
+          .eq('user_id', user.id)
 
         const displayed = (contractsData as Contract[]).map(contract => {
           const customer = (customersData as Customer[])?.find(c => c.id === contract.customer_id)
@@ -97,7 +103,7 @@ export default function ContractsPage() {
     }
 
     loadContracts()
-  }, [])
+  }, [user?.id])
 
   const handleFilter = () => {
     let filtered = contracts

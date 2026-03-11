@@ -6,7 +6,8 @@ import { StatCard } from "@/components/stat-card"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { supabase, type Contract, type Customer, type Technician, getDaysUntilService } from "@/lib/supabase"
+import { supabase, type Contract, type Customer, type Technician, getDaysUntilService, getAuthUser } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 import {
   FileText,
   Users,
@@ -42,6 +43,7 @@ function getStatusBadge(status: string) {
 }
 
 export default function DashboardPage() {
+  const { user } = useAuth()
   const [stats, setStats] = useState({ contracts: 0, dueToday: 0, dueThisWeek: 0, customers: 0, technicians: 0 })
   const [upcomingServices, setUpcomingServices] = useState<UpcomingService[]>([])
   const [loading, setLoading] = useState(true)
@@ -49,10 +51,13 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        if (!user?.id) return
+
         // Fetch contracts
         const { data: contractsData, error: contractsError } = await supabase
           .from('contracts')
           .select('*')
+          .eq('user_id', user.id)
         
         if (contractsError) throw contractsError
 
@@ -60,6 +65,7 @@ export default function DashboardPage() {
         const { data: customersData, error: customersError } = await supabase
           .from('customers')
           .select('*')
+          .eq('user_id', user.id)
         
         if (customersError) throw customersError
 
@@ -67,6 +73,7 @@ export default function DashboardPage() {
         const { data: techniciansData, error: techniciansError } = await supabase
           .from('technicians')
           .select('*')
+          .eq('user_id', user.id)
         
         if (techniciansError) throw techniciansError
 
@@ -138,7 +145,7 @@ export default function DashboardPage() {
     }
 
     loadData()
-  }, [])
+  }, [user?.id])
 
   return (
     <DashboardLayout>
@@ -150,15 +157,15 @@ export default function DashboardPage() {
             <p className="text-muted-foreground">Welcome back! Here{"'"}s your service overview.</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => window.location.href = '/customers'}>
+            <Button variant="outline" size="sm" onClick={() => window.location.href = '/customers'} title="Go to customers page">
               <Plus className="mr-2 size-4" />
               Add Customer
             </Button>
-            <Button variant="outline" size="sm" onClick={() => window.location.href = '/technicians'}>
+            <Button variant="outline" size="sm" onClick={() => window.location.href = '/technicians'} title="Go to technicians page">
               <Plus className="mr-2 size-4" />
               Add Technician
             </Button>
-            <Button size="sm" onClick={() => window.location.href = '/contracts'}>
+            <Button size="sm" onClick={() => window.location.href = '/contracts'} title="Go to contracts page">
               <Plus className="mr-2 size-4" />
               Add Contract
             </Button>
@@ -252,22 +259,22 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-3">
-                <Button variant="outline" className="justify-start" onClick={() => window.location.href = '/contracts'}>
+                <Button variant="outline" className="justify-start" onClick={() => window.location.href = '/contracts'} title="View and manage contracts">
                   <FileText className="mr-2 size-4" />
                   Manage Contracts
                   <ArrowRight className="ml-auto size-4" />
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => window.location.href = '/customers'}>
+                <Button variant="outline" className="justify-start" onClick={() => window.location.href = '/customers'} title="View and manage customers">
                   <Users className="mr-2 size-4" />
                   Manage Customers
                   <ArrowRight className="ml-auto size-4" />
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => window.location.href = '/technicians'}>
+                <Button variant="outline" className="justify-start" onClick={() => window.location.href = '/technicians'} title="View and manage technicians">
                   <Wrench className="mr-2 size-4" />
                   Manage Technicians
                   <ArrowRight className="ml-auto size-4" />
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => window.location.href = '/history'}>
+                <Button variant="outline" className="justify-start" onClick={() => window.location.href = '/history'} title="View service history">
                   <Clock className="mr-2 size-4" />
                   View Service History
                   <ArrowRight className="ml-auto size-4" />

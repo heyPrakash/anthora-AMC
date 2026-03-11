@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { supabase, type Contract, type Customer, type Technician, getDaysUntilService } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 import { AlertTriangle, Clock, CalendarClock, CheckCircle2, UserPlus } from "lucide-react"
 
 interface ServiceAlert {
@@ -84,6 +85,7 @@ function ServiceAlertCard({ service, variant }: { service: ServiceAlert; variant
 }
 
 export default function ServiceAlertsPage() {
+  const { user } = useAuth()
   const [overdueServices, setOverdueServices] = useState<ServiceAlert[]>([])
   const [dueTodayServices, setDueTodayServices] = useState<ServiceAlert[]>([])
   const [upcomingServices, setUpcomingServices] = useState<ServiceAlert[]>([])
@@ -92,8 +94,10 @@ export default function ServiceAlertsPage() {
   useEffect(() => {
     const loadServices = async () => {
       try {
-        const { data: contractsData } = await supabase.from('contracts').select('*')
-        const { data: customersData } = await supabase.from('customers').select('*')
+        if (!user?.id) return
+
+        const { data: contractsData } = await supabase.from('contracts').select('*').eq('user_id', user.id)
+        const { data: customersData } = await supabase.from('customers').select('*').eq('user_id', user.id)
 
         const overdue: ServiceAlert[] = []
         const dueToday: ServiceAlert[] = []
@@ -132,7 +136,7 @@ export default function ServiceAlertsPage() {
     }
 
     loadServices()
-  }, [])
+  }, [user?.id])
 
   return (
     <DashboardLayout>

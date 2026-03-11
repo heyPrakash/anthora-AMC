@@ -88,3 +88,44 @@ export const getDaysUntilService = (nextServiceDate: string): number => {
   const diff = serviceDate.getTime() - today.getTime()
   return Math.ceil(diff / (1000 * 60 * 60 * 24))
 }
+
+// Auth functions
+export const getAuthUser = async () => {
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error) throw error
+  return user
+}
+
+export const signUp = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+  })
+  if (error) throw error
+  return data
+}
+
+export const signIn = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+  if (error) throw error
+  return data
+}
+
+export const signOut = async () => {
+  const { error } = await supabase.auth.signOut()
+  if (error) throw error
+}
+
+export const signInWithGoogle = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
+    },
+  })
+  if (error) throw error
+  return data
+}

@@ -13,10 +13,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { supabase, type Customer, type Contract } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 import { Plus, Search, MoreHorizontal, Eye, Edit, Phone, MapPin, FileText, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 export default function CustomersPage() {
+  const { user } = useAuth()
   const [customers, setCustomers] = useState<(Customer & { contractCount: number })[]>([])
   const [filteredCustomers, setFilteredCustomers] = useState<(Customer & { contractCount: number })[]>([])
   const [loading, setLoading] = useState(true)
@@ -25,15 +27,19 @@ export default function CustomersPage() {
   useEffect(() => {
     const loadCustomers = async () => {
       try {
+        if (!user?.id) return
+
         const { data: customersData, error: customersError } = await supabase
           .from('customers')
           .select('*')
+          .eq('user_id', user.id)
 
         if (customersError) throw customersError
 
         const { data: contractsData } = await supabase
           .from('contracts')
           .select('*')
+          .eq('user_id', user.id)
 
         const customersWithContracts = (customersData as Customer[]).map(customer => {
           const contractCount = (contractsData as Contract[])?.filter(c => c.customer_id === customer.id).length || 0
@@ -54,7 +60,7 @@ export default function CustomersPage() {
     }
 
     loadCustomers()
-  }, [])
+  }, [user?.id])
 
   const handleSearch = (term: string) => {
     setSearchTerm(term)

@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { supabase, type Technician } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 import { Plus, Search, MoreHorizontal, Eye, Edit, Phone, Briefcase, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -30,6 +31,7 @@ function getStatusBadge(status: string) {
 }
 
 export default function TechniciansPage() {
+  const { user } = useAuth()
   const [technicians, setTechnicians] = useState<Technician[]>([])
   const [filteredTechnicians, setFilteredTechnicians] = useState<Technician[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,9 +40,12 @@ export default function TechniciansPage() {
   useEffect(() => {
     const loadTechnicians = async () => {
       try {
+        if (!user?.id) return
+
         const { data, error } = await supabase
           .from('technicians')
           .select('*')
+          .eq('user_id', user.id)
 
         if (error) throw error
         setTechnicians(data as Technician[])
@@ -54,7 +59,7 @@ export default function TechniciansPage() {
     }
 
     loadTechnicians()
-  }, [])
+  }, [user?.id])
 
   const handleSearch = (term: string) => {
     setSearchTerm(term)
