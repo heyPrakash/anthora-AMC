@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -26,102 +27,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, Search, MoreHorizontal, Eye, Edit, Filter } from "lucide-react"
+import { supabase, type Contract, type Customer, getDaysUntilService } from "@/lib/supabase"
+import { Plus, Search, MoreHorizontal, Eye, Edit, Filter, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
-const contracts = [
-  {
-    id: 1,
-    name: "Annual AC Maintenance",
-    customer: "TechCorp Industries",
-    serviceType: "AC",
-    frequency: "Monthly",
-    startDate: "2025-01-15",
-    nextService: "2026-03-15",
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "CCTV System Maintenance",
-    customer: "Global Solutions Ltd",
-    serviceType: "CCTV",
-    frequency: "Quarterly",
-    startDate: "2025-03-01",
-    nextService: "2026-03-10",
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Elevator Service Agreement",
-    customer: "Prime Enterprises",
-    serviceType: "Lift",
-    frequency: "Monthly",
-    startDate: "2024-06-10",
-    nextService: "2026-03-11",
-    status: "active",
-  },
-  {
-    id: 4,
-    name: "Fire Safety System",
-    customer: "Metro Office Complex",
-    serviceType: "Fire Safety",
-    frequency: "Quarterly",
-    startDate: "2025-02-20",
-    nextService: "2026-03-20",
-    status: "active",
-  },
-  {
-    id: 5,
-    name: "HVAC Maintenance",
-    customer: "Sunrise Tower",
-    serviceType: "AC",
-    frequency: "Monthly",
-    startDate: "2024-11-01",
-    nextService: "2026-03-08",
-    status: "overdue",
-  },
-  {
-    id: 6,
-    name: "Security System Check",
-    customer: "DataTech Inc",
-    serviceType: "CCTV",
-    frequency: "Monthly",
-    startDate: "2025-01-05",
-    nextService: "2026-04-05",
-    status: "active",
-  },
-  {
-    id: 7,
-    name: "Generator Maintenance",
-    customer: "Green Valley Apartments",
-    serviceType: "Generator",
-    frequency: "Quarterly",
-    startDate: "2024-09-15",
-    nextService: "2026-03-15",
-    status: "active",
-  },
-  {
-    id: 8,
-    name: "UPS System Service",
-    customer: "CloudNet Solutions",
-    serviceType: "UPS",
-    frequency: "Monthly",
-    startDate: "2025-02-01",
-    nextService: "2026-03-01",
-    status: "expiring",
-  },
-]
+interface ContractDisplay extends Contract {
+  customerName: string
+}
 
-function getStatusBadge(status: string) {
-  switch (status) {
-    case "active":
-      return <Badge className="bg-alert-success/10 text-alert-success border-alert-success/20">Active</Badge>
-    case "overdue":
-      return <Badge className="bg-alert-overdue/10 text-alert-overdue border-alert-overdue/20">Overdue</Badge>
-    case "expiring":
-      return <Badge className="bg-alert-due-today/10 text-alert-due-today border-alert-due-today/20">Expiring Soon</Badge>
-    default:
-      return null
+
+function getStatusBadge(days: number, status: string) {
+  if (days < 0) {
+    return <Badge className="bg-alert-overdue/10 text-alert-overdue border-alert-overdue/20">Overdue</Badge>
+  } else if (days === 0) {
+    return <Badge className="bg-alert-due-today/10 text-alert-due-today border-alert-due-today/20">Due Today</Badge>
+  } else if (days <= 3) {
+    return <Badge className="bg-alert-due-today/10 text-alert-due-today border-alert-due-today/20">Due Soon</Badge>
+  } else if (status === "active") {
+    return <Badge className="bg-alert-success/10 text-alert-success border-alert-success/20">Active</Badge>
   }
+  return <Badge variant="outline">{status}</Badge>
 }
 
 function getServiceTypeBadge(type: string) {
@@ -133,6 +58,96 @@ function getServiceTypeBadge(type: string) {
 }
 
 export default function ContractsPage() {
+  const [contracts, setContracts] = useState<ContractDisplay[]>([])
+  const [filteredContracts, setFilteredContracts] = useState<ContractDisplay[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterType, setFilterType] = useState("all")
+  const [filterStatus, setFilterStatus] = useState("all")
+
+  useEffect(() => {
+    const loadContracts = async () => {
+      try {
+        const { data: contractsData, error: contractsError } = await supabase
+          .from('contracts')
+          .select('*')
+
+        if (contractsError) throw contractsError
+
+        const { data: customersData } = await supabase
+          .from('customers')
+          .select('*')
+
+        const displayed = (contractsData as Contract[]).map(contract => {
+          const customer = (customersData as Customer[])?.find(c => c.id === contract.customer_id)
+          return {
+            ...contract,
+            customerName: customer?.name || 'Unknown'
+          }
+        })
+
+        setContracts(displayed)
+        setFilteredContracts(displayed)
+      } catch (error) {
+        console.error('Error loading contracts:', error)
+        toast.error('Failed to load contracts')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadContracts()
+  }, [])
+
+  const handleFilter = () => {
+    let filtered = contracts
+
+    if (searchTerm) {
+      filtered = filtered.filter(c =>
+        c.contract_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    if (filterType !== 'all') {
+      filtered = filtered.filter(c => c.service_type.toLowerCase() === filterType.toLowerCase())
+    }
+
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(c => {
+        const days = getDaysUntilService(c.next_service_date)
+        if (filterStatus === 'overdue') return days < 0
+        if (filterStatus === 'due-today') return days === 0
+        if (filterStatus === 'due-soon') return days > 0 && days <= 7
+        return c.status === filterStatus
+      })
+    }
+
+    setFilteredContracts(filtered)
+  }
+
+  useEffect(() => {
+    handleFilter()
+  }, [searchTerm, filterType, filterStatus, contracts])
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this contract?')) {
+      try {
+        const { error } = await supabase
+          .from('contracts')
+          .delete()
+          .eq('id', id)
+
+        if (error) throw error
+        setContracts(contracts.filter(c => c.id !== id))
+        toast.success('Contract deleted successfully')
+      } catch (error) {
+        console.error('Error deleting contract:', error)
+        toast.error('Failed to delete contract')
+      }
+    }
+  }
+
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
@@ -142,7 +157,7 @@ export default function ContractsPage() {
             <h1 className="text-2xl font-bold text-foreground">Contracts</h1>
             <p className="text-muted-foreground">Manage your AMC contracts and service agreements</p>
           </div>
-          <Button>
+          <Button onClick={() => window.location.href = '/contracts?action=add'}>
             <Plus className="mr-2 size-4" />
             Add Contract
           </Button>
@@ -158,10 +173,12 @@ export default function ContractsPage() {
                   type="search"
                   placeholder="Search contracts..."
                   className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <div className="flex gap-2">
-                <Select defaultValue="all">
+                <Select value={filterType} onValueChange={setFilterType}>
                   <SelectTrigger className="w-[160px]">
                     <SelectValue placeholder="Service Type" />
                   </SelectTrigger>
@@ -175,7 +192,7 @@ export default function ContractsPage() {
                     <SelectItem value="ups">UPS</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select defaultValue="all">
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="w-[160px]">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
@@ -183,12 +200,10 @@ export default function ContractsPage() {
                     <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="overdue">Overdue</SelectItem>
-                    <SelectItem value="expiring">Expiring Soon</SelectItem>
+                    <SelectItem value="due-today">Due Today</SelectItem>
+                    <SelectItem value="due-soon">Due Soon</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="icon">
-                  <Filter className="size-4" />
-                </Button>
               </div>
             </div>
           </CardContent>
@@ -199,57 +214,70 @@ export default function ContractsPage() {
           <CardHeader>
             <CardTitle>All Contracts</CardTitle>
             <CardDescription>
-              You have {contracts.length} contracts in total
+              You have {filteredContracts.length} contracts {filterType !== 'all' || filterStatus !== 'all' ? 'matching filters' : 'in total'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Contract Name</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Service Type</TableHead>
-                  <TableHead>Frequency</TableHead>
-                  <TableHead>Start Date</TableHead>
-                  <TableHead>Next Service</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[70px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {contracts.map((contract) => (
-                  <TableRow key={contract.id}>
-                    <TableCell className="font-medium">{contract.name}</TableCell>
-                    <TableCell>{contract.customer}</TableCell>
-                    <TableCell>{getServiceTypeBadge(contract.serviceType)}</TableCell>
-                    <TableCell>{contract.frequency}</TableCell>
-                    <TableCell>{contract.startDate}</TableCell>
-                    <TableCell>{contract.nextService}</TableCell>
-                    <TableCell>{getStatusBadge(contract.status)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="size-4" />
-                            <span className="sr-only">Actions</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 size-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 size-4" />
-                            Edit Contract
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading contracts...</div>
+            ) : filteredContracts.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">No contracts found</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Contract Name</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Service Type</TableHead>
+                    <TableHead>Frequency</TableHead>
+                    <TableHead>Start Date</TableHead>
+                    <TableHead>Next Service</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-[70px]">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredContracts.map((contract) => {
+                    const days = getDaysUntilService(contract.next_service_date)
+                    return (
+                      <TableRow key={contract.id}>
+                        <TableCell className="font-medium">{contract.contract_name}</TableCell>
+                        <TableCell>{contract.customerName}</TableCell>
+                        <TableCell>{getServiceTypeBadge(contract.service_type)}</TableCell>
+                        <TableCell>{contract.frequency_days} days</TableCell>
+                        <TableCell>{contract.start_date}</TableCell>
+                        <TableCell>{contract.next_service_date}</TableCell>
+                        <TableCell>{getStatusBadge(days, contract.status)}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="size-4" />
+                                <span className="sr-only">Actions</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>
+                                <Eye className="mr-2 size-4" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Edit className="mr-2 size-4" />
+                                Edit Contract
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDelete(contract.id)} className="text-red-600">
+                                <Trash2 className="mr-2 size-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>
