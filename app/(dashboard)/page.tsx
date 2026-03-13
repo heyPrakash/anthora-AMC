@@ -176,9 +176,23 @@ export default function DashboardPage() {
       })
       .subscribe()
 
+    const techniciansSubscription = supabase
+      .channel('technicians_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'technicians',
+        filter: `user_id=eq.${user?.id}`
+      }, (payload) => {
+        console.log('[v0] Technician changed:', payload)
+        loadData()
+      })
+      .subscribe()
+
     return () => {
       contractsSubscription.unsubscribe()
       customersSubscription.unsubscribe()
+      techniciansSubscription.unsubscribe()
     }
   }, [user?.id])
 

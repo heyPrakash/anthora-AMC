@@ -12,10 +12,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { supabase, type Technician } from "@/lib/supabase"
+import { supabase, type Technician, type ServiceHistory } from "@/lib/supabase"
 import { useAuth } from "@/lib/auth-context"
-import { Plus, Search, MoreHorizontal, Eye, Edit, Phone, Briefcase, Trash2 } from "lucide-react"
+import { Plus, Search, MoreHorizontal, Edit, Phone, Briefcase, Trash2 } from "lucide-react"
 import { toast } from "sonner"
+import { AddTechnicianModal } from "@/components/add-technician-modal"
 
 function getStatusBadge(status: string) {
   switch (status) {
@@ -30,43 +31,67 @@ function getStatusBadge(status: string) {
   }
 }
 
+interface TechnicianWithJobs extends Technician {
+  jobCount: number
+}
+
 export default function TechniciansPage() {
   const { user } = useAuth()
-  const [technicians, setTechnicians] = useState<Technician[]>([])
-  const [filteredTechnicians, setFilteredTechnicians] = useState<Technician[]>([])
+  const [technicians, setTechnicians] = useState<TechnicianWithJobs[]>([])
+  const [filteredTechnicians, setFilteredTechnicians] = useState<TechnicianWithJobs[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingTechnician, setEditingTechnician] = useState<Technician | null>(null)
+
+  const loadTechnicians = async () => {
+    try {
+      if (!user?.id) return
+
+      const { data: techniciansData, error: techniciansError } = await supabase
+        .from('technicians')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (techniciansError) throw techniciansError
+
+      const { data: historyData } = await supabase
+        .from('service_history')
+        .select('technician_id')
+
+      // Count jobs for each technician
+      const techniciansWithJobs = (techniciansData as Technician[]).map(tech => {
+        const jobCount = (historyData as ServiceHistory[])?.filter(h => h.technician_id === tech.id).length || 0
+        return {
+          ...tech,
+          jobCount
+        }
+      })
+
+      setTechnicians(techniciansWithJobs)
+      setFilteredTechnicians(techniciansWithJobs)
+    } catch (error) {
+      console.error('Error loading technicians:', error)
+      toast.error('Failed to load technicians')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const loadTechnicians = async () => {
-      try {
-        if (!user?.id) return
-
-        const { data, error } = await supabase
-          .from('technicians')
-          .select('*')
-          .eq('user_id', user.id)
-
-        if (error) throw error
-        setTechnicians(data as Technician[])
-        setFilteredTechnicians(data as Technician[])
-      } catch (error) {
-        console.error('Error loading technicians:', error)
-        toast.error('Failed to load technicians')
-      } finally {
-        setLoading(false)
-      }
-    }
-
     loadTechnicians()
   }, [user?.id])
 
   const handleSearch = (term: string) => {
     setSearchTerm(term)
-    const filtered = technicians.filter(t =>
-      t.name.toLowerCase().includes(term.toLowerCase()) ||
-      t.phone.includes(term)
-    )
+    const filtered = technicians.filter(t => {
+      const specializations = Array.isArray(t.specialization) ? t.specialization : [t.specialization]
+      return (
+        t.name.toLowerCase().includes(term.toLowerCase()) ||
+        t.phone.includes(term) ||
+        specializations.some(s => s.toLowerCase().includes(term.toLowerCase()))
+      )
+    })
     setFilteredTechnicians(filtered)
   }
 
@@ -87,6 +112,20 @@ export default function TechniciansPage() {
       }
     }
   }
+
+  const handleAddClick = () => {
+    setEditingTechnician(null)
+    setModalOpen(true)
+  }
+
+  const handleEditClick = (technician: TechnicianWithJobs) => {
+    setEditingTechnician(technician)
+    setModalOpen(true)
+  }
+
+  const handleModalSuccess = () => {
+    loadTechnicians()
+  }
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
@@ -96,7 +135,7 @@ export default function TechniciansPage() {
             <h1 className="text-2xl font-bold text-foreground">Technicians</h1>
             <p className="text-muted-foreground">Manage your service technicians and their assignments</p>
           </div>
-          <Button onClick={() => window.location.href = '/technicians?action=add'}>
+          <Button onClick={handleAddClick}>
             <Plus className="mr-2 size-4" />
             Add Technician
           </Button>
@@ -150,11 +189,7 @@ export default function TechniciansPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 size-4" />
-                          View Profile
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditClick(tech)}>
                           <Edit className="mr-2 size-4" />
                           Edit Details
                         </DropdownMenuItem>
@@ -185,16 +220,33 @@ export default function TechniciansPage() {
                     )}
                   </div>
                   <div className="flex items-center justify-between pt-3 border-t border-border">
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">Status: </span>
+                    <div className="flex flex-col gap-2 flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Status:</span>
+                        {getStatusBadge(tech.status)}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Briefcase className="size-4" />
+                        <span>{tech.jobCount} assigned job{tech.jobCount !== 1 ? 's' : ''}</span>
+                      </div>
                     </div>
-                    {getStatusBadge(tech.status)}
                   </div>
                 </CardContent>
               </Card>
             ))
           )}
         </div>
+
+        {/* Add/Edit Technician Modal */}
+        {user && (
+          <AddTechnicianModal
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            onSuccess={handleModalSuccess}
+            editingTechnician={editingTechnician}
+            userId={user.id}
+          />
+        )}
       </div>
     </DashboardLayout>
   )
