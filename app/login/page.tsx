@@ -27,7 +27,7 @@ export default function LoginPage() {
     try {
       await signIn(email, password)
       toast.success('Logged in successfully!')
-      router.push('/')
+      router.push('/auth/callback')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Login failed')
     } finally {
@@ -135,11 +135,6 @@ export default function LoginPage() {
             </p>
           </CardContent>
         </Card>
-
-        {/* Demo Notice */}
-        <div className="text-center text-xs text-muted-foreground">
-          <p>Demo credentials: demo@example.com / password123</p>
-        </div>
       </div>
     </div>
   )

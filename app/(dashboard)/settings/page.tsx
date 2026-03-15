@@ -16,14 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
-import { supabase, type Profile } from "@/lib/supabase"
+import { supabase, type Profile, signOut } from "@/lib/supabase"
 import { Building2, Bell, Users, Calendar, Save, LogOut } from "lucide-react"
 import { toast } from "sonner"
 
 const SERVICE_TYPES = ['AC', 'Lift', 'RO Water Purifier', 'CCTV', 'Pest Control', 'Generator', 'Fire Safety', 'UPS', 'Other']
 
 export default function SettingsPage() {
+  const router = useRouter()
   const { user } = useAuth()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [companyName, setCompanyName] = useState("")
@@ -98,6 +100,16 @@ export default function SettingsPage() {
         ? prev.filter(s => s !== service)
         : [...prev, service]
     )
+  }
+
+  const handleLogout = async () => {
+    try {
+      await signOut()
+      toast.success('Logged out successfully')
+      router.push('/login')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to logout')
+    }
   }
 
   const handleLogout = async () => {
@@ -224,16 +236,23 @@ export default function SettingsPage() {
                         <Save className="mr-2 size-4" />
                         {saving ? 'Saving...' : 'Save Changes'}
                       </Button>
-                      <Button variant="outline" onClick={handleLogout}>
-                        <LogOut className="mr-2 size-4" />
-                        Logout
-                      </Button>
                     </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                    <div className="border-t border-border pt-6 mt-6">
+                      <div className="space-y-3">
+                        <Label>Account Actions</Label>
+                        <Button 
+                          variant="destructive" 
+                          className="w-full"
+                          onClick={handleLogout}
+                        >
+                          <LogOut className="mr-2 size-4" />
+                          Logout
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
           {/* Notification Settings */}
           <TabsContent value="notifications" className="mt-6 space-y-6">
