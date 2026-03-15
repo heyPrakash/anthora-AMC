@@ -20,23 +20,54 @@ import { Spinner } from '@/components/ui/spinner'
 
 const SERVICE_TYPES = ['AC', 'Lift', 'RO Water Purifier', 'CCTV', 'Pest Control', 'Generator', 'Fire Safety', 'UPS', 'Other']
 
+import { useEffect } from 'react'
+
 export default function ProfileSetupPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
+  const [fullName, setFullName] = useState('')
   const [companyName, setCompanyName] = useState('')
-  const [yourName, setYourName] = useState('')
   const [phone, setPhone] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
   const [city, setCity] = useState('')
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [submitError, setSubmitError] = useState('')
+  const [checkingProfile, setCheckingProfile] = useState(true)
+
+  // Check if user already has completed profile
+  useEffect(() => {
+    const checkProfile = async () => {
+      if (!user?.id) return
+      
+      try {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('company_name')
+          .eq('user_id', user.id)
+          .single()
+
+        // If profile is complete, redirect to dashboard
+        if (profileData?.company_name) {
+          router.push('/dashboard')
+        }
+      } catch (error) {
+        // Profile doesn't exist yet, allow setup
+        console.log('No profile found, allowing setup')
+      } finally {
+        setCheckingProfile(false)
+      }
+    }
+
+    checkProfile()
+  }, [user?.id, router])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
+    if (!fullName.trim()) newErrors.fullName = 'Your name is required'
     if (!companyName.trim()) newErrors.companyName = 'Company name is required'
-    if (!yourName.trim()) newErrors.yourName = 'Your name is required'
     if (!phone.trim()) newErrors.phone = 'Phone number is required'
     if (!whatsapp.trim()) newErrors.whatsapp = 'WhatsApp number is required'
     if (!city.trim()) newErrors.city = 'City is required'
@@ -47,6 +78,7 @@ export default function ProfileSetupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSubmitError('')
     
     if (!validateForm() || !user?.id) return
 
@@ -56,6 +88,7 @@ export default function ProfileSetupPage() {
         .from('profiles')
         .upsert({
           user_id: user.id,
+          full_name: fullName,
           company_name: companyName,
           phone: phone,
           whatsapp_number: whatsapp,
@@ -70,8 +103,10 @@ export default function ProfileSetupPage() {
       toast.success('Profile setup completed!')
       router.push('/dashboard')
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Failed to save profile'
       console.error('Error saving profile:', error)
-      toast.error('Failed to save profile')
+      setSubmitError(errorMsg)
+      toast.error(errorMsg)
     } finally {
       setSaving(false)
     }
@@ -85,7 +120,7 @@ export default function ProfileSetupPage() {
     )
   }
 
-  if (authLoading) {
+  if (authLoading || checkingProfile) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-secondary">
         <Spinner className="h-12 w-12" />
@@ -97,11 +132,24 @@ export default function ProfileSetupPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-secondary p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-2xl">Welcome! Set up your business</CardTitle>
-          <CardDescription>Tell us about your company</CardDescription>
+          <CardTitle className="text-2xl">Welcome! Set up your business 👋</CardTitle>
+          <CardDescription>Just a few details to get started</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Your Name */}
+            <div className="space-y-2">
+              <Label htmlFor="name">Your Name *</Label>
+              <Input
+                id="name"
+                placeholder="Enter your full name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className={errors.fullName ? 'border-red-500' : ''}
+              />
+              {errors.fullName && <p className="text-sm text-red-500">{errors.fullName}</p>}
+            </div>
+
             {/* Company Name */}
             <div className="space-y-2">
               <Label htmlFor="company">Company Name *</Label>
@@ -113,19 +161,6 @@ export default function ProfileSetupPage() {
                 className={errors.companyName ? 'border-red-500' : ''}
               />
               {errors.companyName && <p className="text-sm text-red-500">{errors.companyName}</p>}
-            </div>
-
-            {/* Your Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Your Name *</Label>
-              <Input
-                id="name"
-                placeholder="Enter your full name"
-                value={yourName}
-                onChange={(e) => setYourName(e.target.value)}
-                className={errors.yourName ? 'border-red-500' : ''}
-              />
-              {errors.yourName && <p className="text-sm text-red-500">{errors.yourName}</p>}
             </div>
 
             {/* Phone Number */}
@@ -188,6 +223,13 @@ export default function ProfileSetupPage() {
               </div>
             </div>
 
+            {/* Error Message */}
+            {submitError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-700">{submitError}</p>
+              </div>
+            )}
+
             {/* Submit Button */}
             <Button
               type="submit"
@@ -200,7 +242,7 @@ export default function ProfileSetupPage() {
                   Setting up...
                 </>
               ) : (
-                'Complete Setup →'
+                'Start Using Worxful →'
               )}
             </Button>
           </form>
