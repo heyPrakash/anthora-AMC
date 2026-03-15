@@ -28,6 +28,7 @@ export default function SettingsPage() {
   const router = useRouter()
   const { user } = useAuth()
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [fullName, setFullName] = useState("")
   const [companyName, setCompanyName] = useState("")
   const [phone, setPhone] = useState("")
   const [whatsapp, setWhatsapp] = useState("")
@@ -51,6 +52,7 @@ export default function SettingsPage() {
 
         if (data) {
           setProfile(data as Profile)
+          setFullName(data.full_name || "")
           setCompanyName(data.company_name || "")
           setPhone(data.phone || "")
           setWhatsapp(data.whatsapp_number || "")
@@ -76,6 +78,7 @@ export default function SettingsPage() {
         .from('profiles')
         .upsert({
           user_id: user.id,
+          full_name: fullName,
           company_name: companyName,
           phone: phone,
           whatsapp_number: whatsapp,
@@ -154,6 +157,15 @@ export default function SettingsPage() {
                   <div className="text-muted-foreground">Loading profile...</div>
                 ) : (
                   <>
+                    <div className="space-y-2">
+                      <Label htmlFor="full-name">Your Name</Label>
+                      <Input 
+                        id="full-name" 
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="Your full name"
+                      />
+                    </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="company-name">Company Name</Label>
