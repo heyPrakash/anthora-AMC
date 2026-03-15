@@ -14,12 +14,15 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const router = useRouter()
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
+    
     if (!email || !password) {
-      toast.error('Please fill in all fields')
+      setError('Please fill in all fields')
       return
     }
 
@@ -29,7 +32,9 @@ export default function LoginPage() {
       toast.success('Logged in successfully!')
       router.push('/auth/callback')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Login failed')
+      const errorMessage = error instanceof Error ? error.message : 'Login failed'
+      setError(errorMessage)
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -98,6 +103,12 @@ export default function LoginPage() {
                   />
                 </div>
               </div>
+
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
 
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Signing in...' : 'Sign In'}
