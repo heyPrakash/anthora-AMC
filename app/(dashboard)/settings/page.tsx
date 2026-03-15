@@ -250,8 +250,10 @@ export default function SettingsPage() {
                         </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </>
+                )}
+              </CardContent>
+            </Card>
               </TabsContent>
 
           {/* Notification Settings */}
