@@ -45,7 +45,7 @@ export default function ProfileSetupPage() {
         const { data: profileData } = await supabase
           .from('profiles')
           .select('company_name')
-          .eq('user_id', user.id)
+          .eq('id', user.id)
           .single()
 
         // If profile is complete, redirect to dashboard
@@ -85,18 +85,19 @@ export default function ProfileSetupPage() {
     setSaving(true)
     try {
       const { error } = await supabase
-        .from('profiles')
-        .upsert({
-          user_id: user.id,
-          full_name: fullName,
-          company_name: companyName,
-          phone: phone,
-          whatsapp_number: whatsapp,
-          city: city,
-          service_types: selectedServices.length > 0 ? selectedServices : null,
-        }, {
-          onConflict: 'user_id'
-        })
+  .from('profiles')
+  .upsert({
+    id: user.id,
+    full_name: fullName,
+    company_name: companyName,
+    phone: phone,
+    whatsapp_number: whatsapp,
+    city: city,
+    service_types: selectedServices.length > 0 
+      ? selectedServices : null,
+  }, {
+    onConflict: 'id'
+  })
 
       if (error) throw error
       
