@@ -96,3 +96,5 @@ export type ServiceHistory = {
   notes: string
   created_at: string
 }
+
+export const getDaysUntilService = calculateNextServiceDate
