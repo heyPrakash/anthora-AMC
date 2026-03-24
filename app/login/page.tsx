@@ -35,7 +35,7 @@ export default function LoginPage() {
         if (!profile?.company_name) {
           router.push('/profile-setup')
         } else {
-          router.push('/dashboard')
+          router.push('/')
         }
       }
     } catch (error) {

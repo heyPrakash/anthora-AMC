@@ -50,7 +50,7 @@ export default function ProfileSetupPage() {
 
         // If profile is complete, redirect to dashboard
         if (profileData?.company_name) {
-          router.push('/dashboard')
+          router.push('/')
         }
       } catch (error) {
         // Profile doesn't exist yet, allow setup
@@ -102,7 +102,7 @@ export default function ProfileSetupPage() {
       if (error) throw error
       
       toast.success('Profile setup completed!')
-      router.push('/dashboard')
+      router.push('/')
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Failed to save profile'
       console.error('Error saving profile:', error)
