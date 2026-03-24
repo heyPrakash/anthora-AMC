@@ -195,7 +195,7 @@ export default function ProfileSetupPage() {
               <Label htmlFor="city">City *</Label>
               <Input
                 id="city"
-                placeholder="Nashik"
+                placeholder="Mumbai"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 className={errors.city ? 'border-red-500' : ''}
@@ -243,7 +243,7 @@ export default function ProfileSetupPage() {
                   Setting up...
                 </>
               ) : (
-                'Start Using Worxful →'
+                'Start Using Remindi →'
               )}
             </Button>
           </form>
