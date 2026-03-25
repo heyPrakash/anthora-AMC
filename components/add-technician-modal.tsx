@@ -24,6 +24,18 @@ interface AddTechnicianModalProps {
   userId: string
 }
 
+function parseSpecialization(raw: unknown): string {
+  let current: unknown = raw
+  for (let i = 0; i < 10; i++) {
+    if (typeof current === 'string') {
+      try { current = JSON.parse(current); continue } catch { return current }
+    }
+    if (Array.isArray(current) && current.length > 0) { current = current[0]; continue }
+    break
+  }
+  return typeof current === 'string' ? current : ''
+}
+
 const SPECIALIZATION_OPTIONS = [
   'AC',
   'Lift',
@@ -65,9 +77,7 @@ export function AddTechnicianModal({
       setFormData({
         name: editingTechnician.name || '',
         phone: editingTechnician.phone || '',
-        specialization: Array.isArray(editingTechnician.specialization) 
-          ? editingTechnician.specialization[0] 
-          : editingTechnician.specialization || '',
+        specialization: parseSpecialization(editingTechnician.specialization),
         status: editingTechnician.status || 'Available'
       })
     } else {
@@ -108,7 +118,7 @@ export function AddTechnicianModal({
       const technicianData = {
         name: formData.name.trim(),
         phone: formData.phone.trim(),
-        specialization: [formData.specialization],
+        specialization: formData.specialization,
         status: formData.status.toLowerCase().replace(' ', '-')
       }
 

@@ -18,6 +18,20 @@ import { Plus, Search, MoreHorizontal, Edit, Phone, Briefcase, Trash2 } from "lu
 import { toast } from "sonner"
 import { AddTechnicianModal } from "@/components/add-technician-modal"
 
+function parseSpecializations(raw: unknown): string[] {
+  let current: unknown = raw
+  for (let i = 0; i < 10; i++) {
+    if (typeof current === 'string') {
+      try { current = JSON.parse(current); continue } catch { return [current] }
+    }
+    if (Array.isArray(current)) {
+      return current.flatMap(item => parseSpecializations(item)).filter(Boolean)
+    }
+    break
+  }
+  return typeof current === 'string' && current ? [current] : []
+}
+
 function getStatusBadge(status: string) {
   switch (status) {
     case "available":
@@ -85,7 +99,7 @@ export default function TechniciansPage() {
   const handleSearch = (term: string) => {
     setSearchTerm(term)
     const filtered = technicians.filter(t => {
-      const specializations = Array.isArray(t.specialization) ? t.specialization : [t.specialization]
+      const specializations = parseSpecializations(t.specialization)
       return (
         t.name.toLowerCase().includes(term.toLowerCase()) ||
         t.phone.includes(term) ||
@@ -178,7 +192,7 @@ export default function TechniciansPage() {
                       </div>
                       <div>
                         <CardTitle className="text-base">{tech.name}</CardTitle>
-                        <CardDescription className="text-xs">{tech.specialization?.[0] || 'No specialization'}</CardDescription>
+                        <CardDescription className="text-xs">{parseSpecializations(tech.specialization)[0] || 'No specialization'}</CardDescription>
                       </div>
                     </div>
                     <DropdownMenu>
@@ -207,15 +221,15 @@ export default function TechniciansPage() {
                     <span>{tech.phone}</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {Array.isArray(tech.specialization) ? (
-                      tech.specialization.map((spec) => (
+                    {parseSpecializations(tech.specialization).length > 0 ? (
+                      parseSpecializations(tech.specialization).map((spec) => (
                         <Badge key={spec} variant="outline" className="text-xs font-normal">
                           {spec}
                         </Badge>
                       ))
                     ) : (
-                      <Badge variant="outline" className="text-xs font-normal">
-                        {tech.specialization}
+                      <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
+                        No specialization
                       </Badge>
                     )}
                   </div>
