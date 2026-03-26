@@ -38,7 +38,6 @@ export function AppHeader() {
           .from("contracts")
           .select("id, contract_name, next_service_date, status, customer_id")
           .eq("user_id", user.id)
-          .eq("status", "active")
 
         if (!contractsData) return
 
