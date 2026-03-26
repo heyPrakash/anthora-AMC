@@ -41,8 +41,8 @@ const navItems = [
 export function AppSidebar() {
   const pathname = usePathname()
   const { user } = useAuth()
-  const [companyName, setCompanyName] = useState("Anthora")
-  const [companySubtitle, setCompanySubtitle] = useState("Softwares")
+  const [companyName, setCompanyName] = useState("Remindi")
+  const [companySubtitle, setCompanySubtitle] = useState("")
   const [fullName, setFullName] = useState("")
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export function AppSidebar() {
 
         if (data?.company_name) {
           const names = data.company_name.split(' ')
-          setCompanyName(names[0] || "Anthora")
+          setCompanyName(names[0] || "Remindi")
           setCompanySubtitle(names.slice(1).join(' ') || "")
         }
         if (data?.full_name) {
@@ -82,7 +82,7 @@ export function AppSidebar() {
         const profile = payload.new as Profile
         if (profile?.company_name) {
           const names = profile.company_name.split(' ')
-          setCompanyName(names[0] || "Anthora")
+          setCompanyName(names[0] || "Remindi")
           setCompanySubtitle(names.slice(1).join(' ') || "")
         }
         if (profile?.full_name) {

@@ -9,7 +9,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Anthora Softwares - AMC Management',
+  title: 'Remindi - AMC Management',
   description: 'Manage your Annual Maintenance Contracts, customers, technicians, and service schedules efficiently',
   generator: 'v0.app',
   icons: {
