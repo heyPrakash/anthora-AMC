@@ -10,13 +10,14 @@ import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/lib/auth-context"
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line, ComposedChart, Area
+  ResponsiveContainer, PieChart, Pie, Cell, Legend, ComposedChart, Line
 } from "recharts"
 import {
   TrendingUp, TrendingDown, FileText, CheckCircle2, IndianRupee,
   Activity, Download, Minus
 } from "lucide-react"
 import { toast } from "sonner"
+import jsPDF from "jspdf"
 
 type DateRange = "week" | "month" | "last_month" | "year"
 
@@ -316,26 +317,74 @@ export default function ReportsPage() {
     fetchData()
   }, [fetchData])
 
-  const exportCSV = () => {
+  const exportPDF = () => {
     setExporting(true)
     try {
-      const headers = ["Service Date", "Contract ID", "Status"]
-      const rows = currentHistory.map(h => [
-        `"${h.service_date}"`,
-        `"${h.contract_id}"`,
-        `"${h.status}"`,
-      ])
-      const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n")
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `reports-${range}-${new Date().toISOString().split("T")[0]}.csv`
-      a.click()
-      URL.revokeObjectURL(url)
-      toast.success("CSV exported successfully")
-    } catch {
-      toast.error("Failed to export CSV")
+      const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" })
+      const headerBg = [51, 65, 85] as [number, number, number]
+      const headerText = [255, 255, 255] as [number, number, number]
+      const rowBg = [248, 250, 252] as [number, number, number]
+      const altRowBg = [255, 255, 255] as [number, number, number]
+      const textColor = [15, 23, 42] as [number, number, number]
+
+      doc.setFontSize(16)
+      doc.setTextColor(...headerText)
+      doc.setFillColor(...headerBg)
+      doc.rect(0, 0, 297, 15, "F")
+      doc.text(`Remindi — Service Report (${RANGE_LABELS[range]})`, 15, 12)
+
+      doc.setFontSize(10)
+      doc.setTextColor(100, 116, 139)
+      doc.text(`Exported on: ${new Date().toLocaleDateString()}`, 15, 22)
+
+      if (stats) {
+        doc.setFontSize(10)
+        doc.setTextColor(...textColor)
+        doc.text(`Total Services: ${stats.totalServices}   Completed: ${stats.completedServices}   Active Contracts: ${stats.activeContracts}   Total Earnings: Rs.${stats.totalEarnings.toLocaleString("en-IN")}`, 15, 30)
+      }
+
+      const columns = [
+        { header: "Service Date", dataKey: "service_date", width: 40 },
+        { header: "Contract ID", dataKey: "contract_id", width: 80 },
+        { header: "Status", dataKey: "status", width: 40 },
+      ]
+
+      let currentY = 38
+      doc.setFillColor(...headerBg)
+      doc.setTextColor(...headerText)
+      doc.setFontSize(10)
+      doc.setFont(undefined as unknown as string, "bold")
+      let xPos = 15
+      for (const col of columns) {
+        doc.rect(xPos, currentY - 5, col.width, 8, "F")
+        doc.text(col.header, xPos + 2, currentY)
+        xPos += col.width
+      }
+      currentY += 8
+
+      doc.setFont(undefined as unknown as string, "normal")
+      doc.setFontSize(9)
+      let rowIndex = 0
+      for (const record of currentHistory) {
+        doc.setTextColor(...textColor)
+        doc.setFillColor(...(rowIndex % 2 === 0 ? rowBg : altRowBg))
+        doc.rect(15, currentY - 4, 160, 10, "F")
+        xPos = 15
+        for (const col of columns) {
+          const val = String(record[col.dataKey as keyof typeof record] || "")
+          doc.text(val, xPos + 2, currentY + 2, { maxWidth: col.width - 4 })
+          xPos += col.width
+        }
+        currentY += 10
+        rowIndex++
+        if (currentY > 185) { doc.addPage(); currentY = 15 }
+      }
+
+      doc.save(`remindi-report-${range}-${new Date().toISOString().split("T")[0]}.pdf`)
+      toast.success("PDF exported successfully")
+    } catch (err) {
+      console.error(err)
+      toast.error("Failed to export PDF")
     } finally {
       setExporting(false)
     }
@@ -362,9 +411,9 @@ export default function ReportsPage() {
                 <SelectItem value="year">This Year</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" onClick={exportCSV} disabled={exporting || loading}>
+            <Button variant="outline" onClick={exportPDF} disabled={exporting || loading}>
               <Download className="mr-2 size-4" />
-              Export CSV
+              Export PDF
             </Button>
           </div>
         </div>
@@ -457,12 +506,12 @@ export default function ReportsPage() {
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Monthly Services Overview</CardTitle>
-              <CardDescription>Completed, scheduled services and earnings over the last 6 months</CardDescription>
+              <CardDescription>Completed services and earnings over the last 6 months</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <Skeleton className="h-64 w-full" />
-              ) : monthlyData.every(m => m.completed === 0 && m.scheduled === 0) ? (
+              ) : monthlyData.every(m => m.completed === 0) ? (
                 <div className="flex h-64 items-center justify-center text-muted-foreground">
                   No service history data yet
                 </div>
@@ -482,13 +531,11 @@ export default function ReportsPage() {
                       formatter={(value, name) => {
                         if (name === "earnings") return [formatINR(Number(value)), "Earnings"]
                         if (name === "completed") return [value, "Completed"]
-                        if (name === "scheduled") return [value, "Scheduled"]
                         return [value, name]
                       }}
                     />
                     <Legend />
                     <Bar yAxisId="left" dataKey="completed" name="Completed" fill="#22c55e" radius={[3, 3, 0, 0]} />
-                    <Bar yAxisId="left" dataKey="scheduled" name="Scheduled" fill="#6366f1" radius={[3, 3, 0, 0]} />
                     <Line
                       yAxisId="right"
                       type="monotone"

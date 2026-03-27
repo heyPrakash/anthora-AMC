@@ -158,7 +158,9 @@ export default function CustomersPage() {
                       </div>
                       <div>
                         <CardTitle className="text-base">{customer.name}</CardTitle>
-                        <CardDescription className="text-xs">{customer.email || 'No email'}</CardDescription>
+                        {customer.email && (
+                          <CardDescription className="text-xs">{customer.email}</CardDescription>
+                        )}
                       </div>
                     </div>
                     <DropdownMenu>
