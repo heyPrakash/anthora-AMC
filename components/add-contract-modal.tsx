@@ -71,7 +71,8 @@ export function AddContractModal({
     frequency: '',
     startDate: '',
     status: 'active',
-    notes: ''
+    notes: '',
+    contractPrice: ''
   })
 
   // Load customers on mount
@@ -99,7 +100,8 @@ export function AddContractModal({
         frequency: editingContract.frequency_days.toString(),
         startDate: editingContract.start_date,
         status: editingContract.status,
-        notes: editingContract.notes || ''
+        notes: editingContract.notes || '',
+        contractPrice: editingContract.contract_price != null ? editingContract.contract_price.toString() : ''
       })
       setNextServiceDate(editingContract.next_service_date)
     } else if (open) {
@@ -110,7 +112,8 @@ export function AddContractModal({
         frequency: '',
         startDate: '',
         status: 'active',
-        notes: ''
+        notes: '',
+        contractPrice: ''
       })
       setNextServiceDate('')
       setErrors({})
@@ -177,7 +180,8 @@ export function AddContractModal({
         start_date: formData.startDate,
         next_service_date: nextServiceDate,
         status: formData.status,
-        notes: formData.notes || null
+        notes: formData.notes || null,
+        contract_price: formData.contractPrice ? parseFloat(formData.contractPrice) : null
       }
 
       if (editingContract) {
@@ -382,6 +386,20 @@ export function AddContractModal({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Contract Price */}
+          <div className="space-y-2">
+            <Label htmlFor="contractPrice">Contract Price (₹)</Label>
+            <Input
+              id="contractPrice"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="e.g. 5000"
+              value={formData.contractPrice}
+              onChange={(e) => setFormData({ ...formData, contractPrice: e.target.value })}
+            />
           </div>
 
           {/* Notes */}

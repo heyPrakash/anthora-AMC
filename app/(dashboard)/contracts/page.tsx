@@ -253,6 +253,7 @@ export default function ContractsPage() {
                     <TableHead>Customer</TableHead>
                     <TableHead>Service Type</TableHead>
                     <TableHead>Frequency</TableHead>
+                    <TableHead>Price</TableHead>
                     <TableHead>Start Date</TableHead>
                     <TableHead>Next Service</TableHead>
                     <TableHead>Status</TableHead>
@@ -268,6 +269,11 @@ export default function ContractsPage() {
                         <TableCell>{contract.customerName}</TableCell>
                         <TableCell>{getServiceTypeBadge(contract.service_type)}</TableCell>
                         <TableCell>{contract.frequency_days} days</TableCell>
+                        <TableCell>
+                          {contract.contract_price != null
+                            ? `₹${contract.contract_price.toLocaleString('en-IN')}`
+                            : '—'}
+                        </TableCell>
                         <TableCell>{contract.start_date}</TableCell>
                         <TableCell>{contract.next_service_date}</TableCell>
                         <TableCell>{getStatusBadge(days, contract.status)}</TableCell>

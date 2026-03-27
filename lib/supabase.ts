@@ -74,6 +74,7 @@ export type Contract = {
   next_service_date: string
   status: string
   notes: string
+  contract_price: number | null
   created_at: string
 }
 
