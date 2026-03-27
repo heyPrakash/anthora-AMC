@@ -270,8 +270,8 @@ export default function ContractsPage() {
                         <TableCell>{getServiceTypeBadge(contract.service_type)}</TableCell>
                         <TableCell>{contract.frequency_days} days</TableCell>
                         <TableCell>
-                          {contract.contract_price != null
-                            ? `₹${contract.contract_price.toLocaleString('en-IN')}`
+                          {contract.contracts_price != null
+                            ? `₹${contract.contracts_price.toLocaleString('en-IN')}`
                             : '—'}
                         </TableCell>
                         <TableCell>{contract.start_date}</TableCell>

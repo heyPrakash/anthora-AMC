@@ -101,7 +101,7 @@ export function AddContractModal({
         startDate: editingContract.start_date,
         status: editingContract.status,
         notes: editingContract.notes || '',
-        contractPrice: editingContract.contract_price != null ? editingContract.contract_price.toString() : ''
+        contractPrice: editingContract.contracts_price != null ? editingContract.contracts_price.toString() : ''
       })
       setNextServiceDate(editingContract.next_service_date)
     } else if (open) {
@@ -181,7 +181,7 @@ export function AddContractModal({
         next_service_date: nextServiceDate,
         status: formData.status,
         notes: formData.notes || null,
-        contract_price: formData.contractPrice ? parseFloat(formData.contractPrice) : null
+        contracts_price: formData.contractPrice ? parseFloat(formData.contractPrice) : null
       }
 
       if (editingContract) {
