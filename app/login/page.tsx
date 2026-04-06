@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase, signInWithGoogle } from '@/lib/supabase'
+import { useAuth } from '@/lib/auth-context'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -11,10 +12,16 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
 
-  const handleEmailLogin = async (
-    e: React.FormEvent
-  ) => {
+  // If user is already logged in, send them to the dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace('/')
+    }
+  }, [user, authLoading, router])
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     if (!email || !password) {
@@ -23,8 +30,7 @@ export default function LoginPage() {
     }
     setLoading(true)
     try {
-      const { data, error } = await supabase.auth
-        .signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
       if (data.session) {
         const { data: profile } = await supabase
@@ -33,99 +39,83 @@ export default function LoginPage() {
           .eq('id', data.session.user.id)
           .single()
         if (!profile?.company_name) {
-          router.push('/profile-setup')
+          router.replace('/profile-setup')
         } else {
-          router.push('/')
+          router.replace('/')
         }
       }
     } catch (error) {
-      const msg = error instanceof Error 
-        ? error.message : 'Login failed'
+      const msg = error instanceof Error ? error.message : 'Login failed'
       setError(msg)
     } finally {
       setLoading(false)
     }
   }
 
+  // Show nothing while checking auth state to avoid flash
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  // Already logged in — will redirect via useEffect, render nothing
+  if (user) return null
+
   return (
-    <div className="min-h-screen flex items-center 
-      justify-center bg-gray-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">
-            Remindi
-          </h1>
-          <p className="text-gray-500">
-            AMC Management System
-          </p>
+          <h1 className="text-3xl font-bold">Remindi</h1>
+          <p className="text-gray-500">AMC Management System</p>
         </div>
         <div className="bg-white p-8 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-6">
-            Sign In
-          </h2>
-          <form onSubmit={handleEmailLogin} 
-            className="space-y-4">
+          <h2 className="text-xl font-semibold mb-6">Sign In</h2>
+          <form onSubmit={handleEmailLogin} className="space-y-4">
             <div>
-              <label className="block text-sm 
-                font-medium mb-1">
-                Email
-              </label>
+              <label className="block text-sm font-medium mb-1">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="w-full border rounded-md p-3 
-                  outline-none focus:border-blue-500"
+                className="w-full border rounded-md p-3 outline-none focus:border-blue-500"
                 disabled={loading}
               />
             </div>
             <div>
-              <label className="block text-sm 
-                font-medium mb-1">
-                Password
-              </label>
+              <label className="block text-sm font-medium mb-1">Password</label>
               <input
                 type="password"
                 value={password}
-                onChange={(e) => 
-                  setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full border rounded-md p-3 
-                  outline-none focus:border-blue-500"
+                className="w-full border rounded-md p-3 outline-none focus:border-blue-500"
                 disabled={loading}
               />
             </div>
-            {error && (
-              <p className="text-red-600 text-sm">
-                {error}
-              </p>
-            )}
+            {error && <p className="text-red-600 text-sm">{error}</p>}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white 
-                py-3 rounded-md font-medium 
-                hover:bg-blue-700">
+              className="w-full bg-blue-600 text-white py-3 rounded-md font-medium hover:bg-blue-700 disabled:opacity-60"
+            >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
-          <div className="my-4 text-center 
-            text-gray-400">
-            Or
-          </div>
+          <div className="my-4 text-center text-gray-400">Or</div>
           <button
             onClick={signInWithGoogle}
             disabled={loading}
-            className="w-full border py-3 rounded-md 
-              font-medium hover:bg-gray-50">
+            className="w-full border py-3 rounded-md font-medium hover:bg-gray-50 disabled:opacity-60"
+          >
             Sign in with Google
           </button>
-          <p className="text-center text-sm 
-            text-gray-500 mt-4">
-            Don't have an account?{' '}
-            <Link href="/signup" 
-              className="text-blue-600 font-medium">
+          <p className="text-center text-sm text-gray-500 mt-4">
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className="text-blue-600 font-medium">
               Sign up
             </Link>
           </p>
