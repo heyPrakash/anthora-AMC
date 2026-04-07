@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'
+
 import webpush from 'web-push'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
