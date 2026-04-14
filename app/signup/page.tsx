@@ -15,6 +15,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
@@ -43,6 +44,11 @@ export default function SignupPage() {
       return
     }
 
+    if (!agreedToTerms) {
+      toast.error('Please agree to the Terms and Conditions and Privacy Policy')
+      return
+    }
+
     setLoading(true)
     try {
       await signUp(email, password)
@@ -55,6 +61,10 @@ export default function SignupPage() {
   }
 
   const handleGoogleSignup = async () => {
+    if (!agreedToTerms) {
+      toast.error('Please agree to the Terms and Conditions and Privacy Policy')
+      return
+    }
     setLoading(true)
     try {
       await signInWithGoogle()
@@ -134,6 +144,28 @@ export default function SignupPage() {
                     disabled={loading}
                   />
                 </div>
+              </div>
+
+              {/* Terms & Conditions Checkbox */}
+              <div className="flex items-start gap-3">
+                <input
+                  id="terms"
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  disabled={loading}
+                  className="mt-0.5 h-4 w-4 rounded border-border accent-primary cursor-pointer"
+                />
+                <label htmlFor="terms" className="text-sm text-muted-foreground leading-snug cursor-pointer">
+                  I agree to the{' '}
+                  <Link href="/terms" className="text-primary hover:underline font-medium" target="_blank">
+                    Terms and Conditions
+                  </Link>{' '}
+                  and{' '}
+                  <Link href="/privacy" className="text-primary hover:underline font-medium" target="_blank">
+                    Privacy Policy
+                  </Link>
+                </label>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>

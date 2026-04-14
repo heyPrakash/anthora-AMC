@@ -1,0 +1,173 @@
+📄 Terms and Conditions
+Copy this entire content:
+
+Terms and Conditions
+Effective Date: April 14, 2026
+Last Updated: April 14, 2026
+1. Acceptance of Terms
+By accessing or using Remindi ("the Service") at remindi.online, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use our Service.
+2. Description of Service
+Remindi is an AMC (Annual Maintenance Contract) service management software designed for maintenance contractors in India. It allows users to manage clients, contracts, technicians, service schedules, alerts, and reports.
+3. User Accounts
+
+You must provide accurate and complete information when creating an account.
+You are responsible for maintaining the confidentiality of your account credentials.
+You are responsible for all activities that occur under your account.
+You must notify us immediately at support@remindi.online if you suspect unauthorized use.
+
+4. Acceptable Use
+You agree not to:
+
+Use the Service for any unlawful purpose
+Upload harmful, offensive, or misleading content
+Attempt to hack, reverse engineer, or disrupt the Service
+Share your account credentials with unauthorized persons
+Use the Service to spam or harass others
+
+5. Data Ownership
+
+All client and business data you enter into Remindi belongs to you.
+We do not sell your data to third parties.
+You are responsible for the accuracy of data you enter.
+
+6. Free Plan & Paid Plans
+
+Remindi currently offers a free plan with full features.
+We reserve the right to introduce paid plans in the future with advance notice to existing users.
+Free plan availability may change at our discretion with 30 days notice.
+
+7. Service Availability
+
+We aim to provide 99% uptime but do not guarantee uninterrupted service.
+We are not liable for losses caused by service downtime or technical issues.
+We reserve the right to modify or discontinue features at any time.
+
+8. Intellectual Property
+
+Remindi and its original content, features, and functionality are owned by Remindi and protected by applicable intellectual property laws.
+You may not copy, reproduce, or distribute any part of our Service without permission.
+
+9. Limitation of Liability
+Remindi shall not be liable for any indirect, incidental, special, or consequential damages resulting from your use of the Service, including but not limited to loss of data, loss of business, or loss of revenue.
+10. Termination
+We reserve the right to suspend or terminate your account at any time if you violate these Terms and Conditions, with or without prior notice.
+11. Changes to Terms
+We may update these Terms at any time. Continued use of the Service after changes constitutes your acceptance of the new Terms. We will notify users of significant changes via email or in-app notification.
+12. Governing Law
+These Terms are governed by the laws of India. Any disputes shall be subject to the jurisdiction of courts in Pune, Maharashtra, India.
+13. Contact Us
+For any questions regarding these Terms, contact us at:
+📧 support@remindi.online
+🌐 remindi.online
+
+🔒 Privacy Policy
+Copy this entire content:
+
+Privacy Policy
+Effective Date: April 14, 2026
+Last Updated: April 14, 2026
+1. Introduction
+Remindi ("we", "our", "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, store, and protect your information when you use remindi.online and our Android App.
+2. Information We Collect
+Information you provide:
+
+Name, email address, phone number during registration
+Business name and location
+Client details, contract information, technician data you add to the platform
+
+Information collected automatically:
+
+Device type, browser type, IP address
+Usage data such as pages visited and features used
+App usage analytics
+
+3. How We Use Your Information
+We use the information we collect to:
+
+Provide and improve the Remindi Service
+Send service reminders and alerts as part of the product
+Send important account and product notifications
+Respond to your support requests
+Analyze usage to improve features
+Comply with legal obligations
+
+4. Data Storage
+
+Your data is stored securely on cloud servers.
+We implement industry-standard security measures including encryption and secure access controls.
+We do not store payment information on our servers.
+
+5. Data Sharing
+We do not sell, trade, or rent your personal data to third parties. We may share data only in the following cases:
+
+With service providers who help us operate the platform (e.g. hosting, analytics) under strict confidentiality agreements
+If required by law, court order, or government authority
+To protect the rights and safety of Remindi and its users
+
+6. Your Client's Data
+
+Any data you enter about your clients (names, phone numbers, addresses) is owned by you.
+You are responsible for obtaining appropriate consent from your clients before entering their data into Remindi.
+We process this data only to provide the Service to you.
+
+7. Cookies
+Remindi uses cookies to:
+
+Keep you logged in
+Remember your preferences
+Analyze how the Service is used
+You can disable cookies in your browser settings, but some features may not work properly.
+
+8. Android App
+Our Android App may request the following permissions:
+
+Notifications — to send service alerts
+Internet access — to sync your data
+We do not access your contacts, camera, or location without your explicit permission.
+
+9. Data Retention
+
+We retain your data as long as your account is active.
+If you delete your account, we will delete your data within 30 days.
+Some data may be retained longer if required by law.
+
+10. Children's Privacy
+Remindi is not intended for use by anyone under the age of 18. We do not knowingly collect data from minors.
+11. Your Rights
+You have the right to:
+
+Access the data we hold about you
+Request correction of inaccurate data
+Request deletion of your account and data
+Withdraw consent at any time
+
+To exercise these rights, contact us at support@remindi.online
+12. Changes to This Policy
+We may update this Privacy Policy from time to time. We will notify you of significant changes via email or in-app notification. Continued use of the Service means you accept the updated policy.
+13. Contact Us
+If you have any questions about this Privacy Policy, contact us at:
+📧 support@remindi.online
+🌐 remindi.online
+
+💻 Replit Prompt — Copy & Paste This Exactly
+
+"I need you to add two new pages to my Remindi website:
+1. Terms and Conditions page at the route /terms
+2. Privacy Policy page at the route /privacy
+Both pages should:
+
+Match the existing design, colors, fonts and style of the Remindi website
+Have the Remindi navbar at the top with all existing navigation links
+Have the Remindi footer at the bottom
+Be fully mobile responsive
+Have a clean, professional layout with proper headings and sections
+
+For the Terms and Conditions page (/terms), use this exact content:
+[paste the full Terms and Conditions content above]*
+For the Privacy Policy page (/privacy), use this exact content:
+[paste the full Privacy Policy content above]*
+After adding both pages:
+
+Add a link to Terms and Conditions in the website footer
+Add a link to Privacy Policy in the website footer
+On the signup/register page, add a checkbox that says "I agree to the Terms and Conditions and Privacy Policy" with links to both pages — user should not be able to register without checking this box"*
