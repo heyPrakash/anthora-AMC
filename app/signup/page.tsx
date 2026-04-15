@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { signUp, signInWithGoogle } from '@/lib/supabase'
+import { signUp, signIn, signInWithGoogle } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { toast } from 'sonner'
 import { Mail, Lock } from 'lucide-react'
@@ -47,10 +47,17 @@ export default function SignupPage() {
     setLoading(true)
     try {
       await signUp(email, password)
-      toast.success('Account created! Redirecting...')
-      router.push('/auth/callback')
+      await signIn(email, password)
+      toast.success('Account created! Welcome to Remindi.')
+      router.replace('/profile-setup')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Signup failed')
+      const msg = error instanceof Error ? error.message : 'Signup failed'
+      if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already exists')) {
+        toast.error('This email is already registered. Please sign in instead.')
+        router.replace('/login')
+      } else {
+        toast.error(msg)
+      }
       setLoading(false)
     }
   }
