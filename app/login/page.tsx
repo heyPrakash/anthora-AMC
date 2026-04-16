@@ -33,7 +33,7 @@ export default function LoginPage() {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
         if (error.message.toLowerCase().includes('invalid login credentials') || error.message.toLowerCase().includes('invalid credentials')) {
-          setError('Incorrect email or password. Please try again.')
+          setError('No account found with these credentials. Please check your email and password, or sign up for a new account.')
         } else {
           setError(error.message)
         }
@@ -90,7 +90,12 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium">Password</label>
+                <Link href="/forgot-password" className="text-xs text-blue-600 hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 type="password"
                 value={password}
