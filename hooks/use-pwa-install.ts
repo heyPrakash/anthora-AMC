@@ -8,29 +8,45 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 let deferredPrompt: BeforeInstallPromptEvent | null = null
+let installedState = false
+const listeners = new Set<(state: { canInstall: boolean; installed: boolean }) => void>()
+
+const notifyListeners = () => {
+  const state = { canInstall: Boolean(deferredPrompt), installed: installedState }
+  listeners.forEach((listener) => listener(state))
+}
 
 export function usePWAInstall() {
-  const [canInstall, setCanInstall] = useState(false)
-  const [installed, setInstalled] = useState(false)
+  const [canInstall, setCanInstall] = useState(Boolean(deferredPrompt))
+  const [installed, setInstalled] = useState(installedState)
 
   useEffect(() => {
+    const syncState = (state: { canInstall: boolean; installed: boolean }) => {
+      setCanInstall(state.canInstall)
+      setInstalled(state.installed)
+    }
+
+    listeners.add(syncState)
+    syncState({ canInstall: Boolean(deferredPrompt), installed: installedState })
+
     const handler = (e: Event) => {
       e.preventDefault()
       deferredPrompt = e as BeforeInstallPromptEvent
-      setCanInstall(true)
       console.log('Install prompt available')
+      notifyListeners()
     }
 
     const installedHandler = () => {
-      setInstalled(true)
-      setCanInstall(false)
+      installedState = true
       deferredPrompt = null
+      notifyListeners()
     }
 
     window.addEventListener('beforeinstallprompt', handler)
     window.addEventListener('appinstalled', installedHandler)
 
     return () => {
+      listeners.delete(syncState)
       window.removeEventListener('beforeinstallprompt', handler)
       window.removeEventListener('appinstalled', installedHandler)
     }
@@ -38,7 +54,7 @@ export function usePWAInstall() {
 
   const installApp = async () => {
     if (!deferredPrompt) {
-      setCanInstall(false)
+      notifyListeners()
       return
     }
 
@@ -47,7 +63,7 @@ export function usePWAInstall() {
     const { outcome } = await deferredPrompt.userChoice
     console.log(`User ${outcome}`)
     deferredPrompt = null
-    setCanInstall(false)
+    notifyListeners()
   }
 
   return { installApp, installed, canInstall }
