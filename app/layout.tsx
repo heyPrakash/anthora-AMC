@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/lib/auth-context'
 import { Toaster } from 'sonner'
-import { PwaRegister } from '@/components/pwa-register'
+import { InstallCacheCleanup } from '@/components/install-cache-cleanup'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -13,7 +13,6 @@ export const metadata: Metadata = {
   title: 'Remindi - AMC Management',
   description: 'Manage your Annual Maintenance Contracts, customers, technicians, and service schedules efficiently',
   generator: 'v0.app',
-  manifest: '/manifest.json',
   icons: {
     icon: '/remindi-logo.png',
     apple: '/remindi-logo.png',
@@ -29,7 +28,6 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="theme-color" content="#ffffff" />
-        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-sans antialiased">
         <AuthProvider>
@@ -37,7 +35,7 @@ export default function RootLayout({
           <Toaster />
         </AuthProvider>
         <Analytics />
-        <PwaRegister />
+        <InstallCacheCleanup />
       </body>
     </html>
   )

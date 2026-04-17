@@ -704,7 +704,7 @@
     }
     .faq-item.open .faq-answer { max-height: 200px; padding: 0 24px; }
 
-    /* ─── PWA INSTALL SECTION ─────────────────────────── */
+    /* ─── APK DOWNLOAD SECTION ────────────────────────── */
     .install-section {
       background: var(--gray-50);
       text-align: center;
@@ -1227,40 +1227,36 @@
   </div>
 </section>
 
-<!-- PWA INSTALL -->
+<!-- APK DOWNLOAD -->
 <section class="install-section" id="install-app">
   <div class="container">
     <div class="install-card">
       <div class="install-icon-wrap">📲</div>
-      <div class="section-badge">Install App</div>
-      <h2>Add Remindi to Your Home Screen</h2>
-      <p>Install Remindi as an app on your phone or desktop for a faster, full-screen experience — no app store needed.</p>
+      <div class="section-badge">Android App</div>
+      <h2>Download the Remindi APK</h2>
+      <p>Install Remindi on your Android phone by downloading the APK file directly.</p>
       <div class="install-badges">
         <span class="install-badge">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-          Works Offline
+          Android APK
         </span>
         <span class="install-badge">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-          Push Notifications
+          Direct Download
         </span>
         <span class="install-badge">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-          Android &amp; Desktop
+          Mobile App
         </span>
         <span class="install-badge">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
           No App Store Needed
         </span>
       </div>
-      <button class="btn-install" id="pwa-install-btn" onclick="installPWA()">
+      <a class="btn-install" id="apk-download-btn" href="/remindi.apk" download="Remindi.apk" type="application/vnd.android.package-archive">
         <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
-        Install App
-      </button>
-      <p class="install-fallback" id="pwa-fallback" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-        To install, tap your browser menu (⋮) → "Add to Home Screen"
-      </p>
+        Download APK
+      </a>
     </div>
   </div>
 </section>
@@ -1338,7 +1334,7 @@
           <span class="icon">+</span>
         </button>
         <div class="faq-answer">
-          <p>Yes! remindi works perfectly on mobile, tablet and desktop browsers. No app download needed — just open in your browser and you're ready to go.</p>
+          <p>Yes! remindi works in the browser, and Android users can also download the APK directly from this website.</p>
         </div>
       </div>
       <div class="faq-item">
@@ -1472,36 +1468,6 @@
     });
   });
 
-  // PWA Install
-  let deferredPrompt = null;
-  const installBtn = document.getElementById('pwa-install-btn');
-  const fallbackMsg = document.getElementById('pwa-fallback');
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
-
-  window.addEventListener('appinstalled', () => {
-    deferredPrompt = null;
-    installBtn.style.display = 'none';
-    fallbackMsg.style.display = 'none';
-  });
-
-  async function installPWA() {
-    if (deferredPrompt) {
-      await deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log('PWA install outcome:', outcome);
-      deferredPrompt = null;
-      if (outcome === 'accepted') {
-        installBtn.style.display = 'none';
-      }
-    } else {
-      installBtn.style.display = 'none';
-      fallbackMsg.style.display = 'flex';
-    }
-  }
 </script>
 
 </body>

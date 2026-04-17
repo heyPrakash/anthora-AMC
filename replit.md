@@ -30,4 +30,5 @@ Server-side API routes also expect private server environment variables when not
 - Imported/migrated the project to run in Replit without rewriting the application.
 - Installed project dependencies with pnpm.
 - Verified the Replit workflow starts successfully and the app responds with HTTP 200 on `/`.
-- Replaced the PWA install prompt UI with a direct APK download link using `public/remindi.apk`.
+- Replaced the web install prompt UI with a direct APK download link using `public/remindi.apk`.
+- Added direct APK download to the sign-in page and removed remaining browser install prompt/fallback logic from the app shell and landing page.

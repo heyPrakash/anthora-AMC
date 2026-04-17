@@ -1,7 +1,5 @@
-const CACHE_NAME = 'remindi-v1';
+const CACHE_NAME = 'remindi-notifications-v2';
 const STATIC_ASSETS = [
-  '/',
-  '/manifest.json',
   '/icons-192.png',
   '/icons-512.png'
 ];
