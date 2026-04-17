@@ -7,33 +7,48 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
+let deferredPrompt: BeforeInstallPromptEvent | null = null
+
 export function usePWAInstall() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [canInstall, setCanInstall] = useState(false)
   const [installed, setInstalled] = useState(false)
 
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault()
-      setDeferredPrompt(e as BeforeInstallPromptEvent)
+      deferredPrompt = e as BeforeInstallPromptEvent
+      setCanInstall(true)
+      console.log('Install prompt available')
     }
-    window.addEventListener('beforeinstallprompt', handler)
-    window.addEventListener('appinstalled', () => {
+
+    const installedHandler = () => {
       setInstalled(true)
-      setDeferredPrompt(null)
-    })
-    return () => window.removeEventListener('beforeinstallprompt', handler)
+      setCanInstall(false)
+      deferredPrompt = null
+    }
+
+    window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener('appinstalled', installedHandler)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler)
+      window.removeEventListener('appinstalled', installedHandler)
+    }
   }, [])
 
   const installApp = async () => {
-    if (deferredPrompt) {
-      await deferredPrompt.prompt()
-      const { outcome } = await deferredPrompt.userChoice
-      console.log('PWA install outcome:', outcome)
-      setDeferredPrompt(null)
-    } else {
-      alert('To install: tap the browser menu (⋮) and select "Add to Home Screen"')
+    if (!deferredPrompt) {
+      setCanInstall(false)
+      return
     }
+
+    console.log('Install prompt triggered')
+    await deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    console.log(`User ${outcome}`)
+    deferredPrompt = null
+    setCanInstall(false)
   }
 
-  return { installApp, installed }
+  return { installApp, installed, canInstall }
 }

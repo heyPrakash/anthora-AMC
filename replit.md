@@ -30,3 +30,4 @@ Server-side API routes also expect private server environment variables when not
 - Imported/migrated the project to run in Replit without rewriting the application.
 - Installed project dependencies with pnpm.
 - Verified the Replit workflow starts successfully and the app responds with HTTP 200 on `/`.
+- Updated PWA install behavior so the Install App button only appears after the native `beforeinstallprompt` event is available and no fallback install instructions are shown.
