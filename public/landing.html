@@ -1253,13 +1253,13 @@
           No App Store Needed
         </span>
       </div>
-      <button class="btn-install" id="pwa-install-btn" onclick="installPWA()" style="display:none;">
+      <button class="btn-install" id="pwa-install-btn" onclick="installPWA()">
         <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
         Install App
       </button>
       <p class="install-fallback" id="pwa-fallback" style="display:none;">
         <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-        To install, use your browser menu → "Add to Home Screen"
+        To install, tap your browser menu (⋮) → "Add to Home Screen"
       </p>
     </div>
   </div>
@@ -1480,8 +1480,6 @@
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    installBtn.style.display = 'inline-flex';
-    fallbackMsg.style.display = 'none';
   });
 
   window.addEventListener('appinstalled', () => {
@@ -1490,20 +1488,19 @@
     fallbackMsg.style.display = 'none';
   });
 
-  // Show fallback if prompt never fires (e.g. iOS Safari)
-  setTimeout(() => {
-    if (!deferredPrompt && installBtn.style.display === 'none') {
+  async function installPWA() {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('PWA install outcome:', outcome);
+      deferredPrompt = null;
+      if (outcome === 'accepted') {
+        installBtn.style.display = 'none';
+      }
+    } else {
+      installBtn.style.display = 'none';
       fallbackMsg.style.display = 'flex';
     }
-  }, 3000);
-
-  async function installPWA() {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log('PWA install outcome:', outcome);
-    deferredPrompt = null;
-    installBtn.style.display = 'none';
   }
 </script>
 

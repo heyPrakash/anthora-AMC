@@ -46,7 +46,7 @@ export function AppSidebar() {
   const [companyName, setCompanyName] = useState("Remindi")
   const [companySubtitle, setCompanySubtitle] = useState("")
   const [fullName, setFullName] = useState("")
-  const { isInstallable, installApp } = usePWAInstall()
+  const { installApp, installed } = usePWAInstall()
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -135,7 +135,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border p-4 space-y-3">
-        {isInstallable && (
+        {!installed && (
           <button
             onClick={installApp}
             className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium bg-sidebar-primary text-sidebar-primary-foreground hover:opacity-90 transition-opacity group-data-[collapsible=icon]:justify-center"

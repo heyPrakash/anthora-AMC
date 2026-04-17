@@ -9,36 +9,31 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [isInstallable, setIsInstallable] = useState(false)
+  const [installed, setInstalled] = useState(false)
 
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
-      setIsInstallable(true)
     }
-
     window.addEventListener('beforeinstallprompt', handler)
-
     window.addEventListener('appinstalled', () => {
+      setInstalled(true)
       setDeferredPrompt(null)
-      setIsInstallable(false)
     })
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handler)
-    }
+    return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
   const installApp = async () => {
-    if (!deferredPrompt) return
-
-    await deferredPrompt.prompt()
-    const { outcome } = await deferredPrompt.userChoice
-    console.log(`PWA install prompt outcome: ${outcome}`)
-    setDeferredPrompt(null)
-    setIsInstallable(false)
+    if (deferredPrompt) {
+      await deferredPrompt.prompt()
+      const { outcome } = await deferredPrompt.userChoice
+      console.log('PWA install outcome:', outcome)
+      setDeferredPrompt(null)
+    } else {
+      alert('To install: tap the browser menu (⋮) and select "Add to Home Screen"')
+    }
   }
 
-  return { isInstallable, installApp }
+  return { installApp, installed }
 }
