@@ -12,6 +12,7 @@ import {
   History,
   BarChart3,
   Settings,
+  Download,
 } from "lucide-react"
 import {
   Sidebar,
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/sidebar"
 import { supabase, type Profile } from "@/lib/supabase"
 import { useAuth } from "@/lib/auth-context"
+import { usePWAInstall } from "@/hooks/use-pwa-install"
 
 const navItems = [
   { title: "Dashboard", icon: LayoutDashboard, href: "/" },
@@ -44,6 +46,7 @@ export function AppSidebar() {
   const [companyName, setCompanyName] = useState("Remindi")
   const [companySubtitle, setCompanySubtitle] = useState("")
   const [fullName, setFullName] = useState("")
+  const { isInstallable, installApp } = usePWAInstall()
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -131,7 +134,16 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border p-4">
+      <SidebarFooter className="border-t border-sidebar-border p-4 space-y-3">
+        {isInstallable && (
+          <button
+            onClick={installApp}
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium bg-sidebar-primary text-sidebar-primary-foreground hover:opacity-90 transition-opacity group-data-[collapsible=icon]:justify-center"
+          >
+            <Download className="size-4 shrink-0" />
+            <span className="group-data-[collapsible=icon]:hidden">Install App</span>
+          </button>
+        )}
         <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
           <div className="flex size-8 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-accent-foreground">
             <span className="text-xs font-medium">
