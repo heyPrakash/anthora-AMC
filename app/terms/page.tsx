@@ -30,7 +30,7 @@ export default function TermsPage() {
               <li>You must provide accurate and complete information when creating an account.</li>
               <li>You are responsible for maintaining the confidentiality of your account credentials.</li>
               <li>You are responsible for all activities that occur under your account.</li>
-              <li>You must notify us immediately at <a href="mailto:remindisupport@gmail.com" className="text-primary hover:underline">remindisupport@gmail.com</a> if you suspect unauthorized use.</li>
+              <li>You must notify us immediately at <a href="mailto:support@remindi.online" className="text-primary hover:underline">support@remindi.online</a> if you suspect unauthorized use.</li>
             </ul>
           </section>
 
@@ -105,7 +105,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-foreground">13. Contact Us</h2>
             <p className="text-muted-foreground">For any questions regarding these Terms, contact us at:</p>
             <div className="space-y-1 text-muted-foreground">
-              <p>📧 <a href="mailto:remindisupport@gmail.com" className="text-primary hover:underline">remindisupport@gmail.com</a></p>
+              <p>📧 <a href="mailto:support@remindi.online" className="text-primary hover:underline">support@remindi.online</a></p>
               <p>🌐 <a href="https://remindi.online" className="text-primary hover:underline">remindi.online</a></p>
             </div>
           </section>
