@@ -4,12 +4,5 @@
       "path": "/api/check-contracts",
       "schedule": "0 9 * * *"
     }
-  ],
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/landing.html",
-      "permanent": false
-    }
   ]
 }
