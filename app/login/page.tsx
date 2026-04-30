@@ -18,7 +18,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      router.replace('/')
+      router.replace('/dashboard')
     }
   }, [user, authLoading, router])
 
@@ -49,7 +49,7 @@ export default function LoginPage() {
         if (!profile?.company_name) {
           router.replace('/profile-setup')
         } else {
-          router.replace('/')
+          router.replace('/dashboard')
         }
       }
     } catch (err) {
