@@ -648,6 +648,182 @@
     .author-info strong { display: block; font-size: .9rem; font-weight: 700; color: var(--gray-900); }
     .author-info span { font-size: .78rem; color: var(--gray-500); }
 
+    /* ─── PRICING ─────────────────────────────────────── */
+    .pricing { background: var(--gray-50); }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      margin-top: 56px;
+      align-items: stretch;
+    }
+    .pricing-card {
+      background: white;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 16px;
+      padding: 36px 32px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      transition: transform .2s, box-shadow .2s;
+      position: relative;
+    }
+    .pricing-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+    }
+    .pricing-card.pro {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(41,171,226,.14), var(--shadow-md);
+    }
+    .pricing-card.pro:hover {
+      box-shadow: 0 0 0 3px rgba(41,171,226,.22), var(--shadow-lg);
+    }
+    .pricing-popular-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--blue);
+      color: white;
+      font-size: .75rem;
+      font-weight: 700;
+      padding: 5px 18px;
+      border-radius: 999px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      box-shadow: var(--shadow-blue);
+    }
+    .pricing-plan-name {
+      font-size: .8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--blue-dark);
+      margin-bottom: 10px;
+    }
+    .pricing-price {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    .pricing-price .amount {
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: var(--gray-900);
+      line-height: 1;
+    }
+    .pricing-price .currency {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--gray-700);
+      margin-bottom: 4px;
+    }
+    .pricing-price .period {
+      font-size: .9rem;
+      color: var(--gray-500);
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .pricing-price.free .amount {
+      font-size: 2.2rem;
+      color: var(--blue);
+    }
+    .pricing-desc {
+      font-size: .85rem;
+      color: var(--gray-500);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+    .pricing-divider {
+      height: 1px;
+      background: var(--gray-200);
+      margin-bottom: 24px;
+    }
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex: 1;
+    }
+    .pricing-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: .9rem;
+      color: var(--gray-700);
+      line-height: 1.45;
+    }
+    .pricing-features li .pf-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(41,171,226,.12);
+      color: var(--blue-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .pricing-card.pro .pricing-features li .pf-check {
+      background: var(--blue);
+      color: white;
+    }
+    .btn-pricing {
+      display: block;
+      text-align: center;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: .97rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      border: 2px solid var(--gray-200);
+      color: var(--gray-800);
+      background: white;
+    }
+    .btn-pricing:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-pricing.btn-pricing-pro {
+      background: var(--blue);
+      color: white;
+      border-color: var(--blue);
+      box-shadow: var(--shadow-blue);
+    }
+    .btn-pricing.btn-pricing-pro:hover {
+      background: var(--blue-dark);
+      border-color: var(--blue-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 36px rgba(41,171,226,.38);
+    }
+    .pricing-note {
+      text-align: center;
+      margin-top: 32px;
+      font-size: .88rem;
+      color: var(--gray-500);
+    }
+    .pricing-note span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pricing-note span::before {
+      content: '✓';
+      color: var(--blue);
+      font-weight: 700;
+    }
+
     /* ─── FAQ ─────────────────────────────────────────── */
     .faq { background: white; }
     .faq-list {
@@ -963,6 +1139,12 @@
       .features-grid { grid-template-columns: repeat(2, 1fr); }
       .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
       .testimonials-grid .testimonial-card:last-child { grid-column: 1 / -1; max-width: 480px; margin: 0 auto; width: 100%; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 440px; margin-left: auto; margin-right: auto; }
+    }
+
+    @media (min-width: 640px) and (max-width: 1024px) {
+      .pricing-grid { grid-template-columns: repeat(2, 1fr); max-width: 100%; }
+      .pricing-grid .pricing-card:last-child { grid-column: 1 / -1; max-width: 440px; margin: 0 auto; width: 100%; }
     }
 
     @media (max-width: 768px) {
@@ -982,6 +1164,9 @@
       .steps::before { display: none; }
       .testimonials-grid { grid-template-columns: 1fr; }
       .testimonials-grid .testimonial-card:last-child { grid-column: auto; max-width: none; }
+
+      .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
+      .pricing-grid .pricing-card:last-child { grid-column: auto; max-width: none; }
 
       .footer-top { flex-direction: column; gap: 32px; }
       .footer-links { gap: 32px; }
@@ -1004,6 +1189,7 @@
     <ul class="nav-links">
       <li><a href="#features">Features</a></li>
       <li><a href="#how-it-works">How it Works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
       <li><a href="#faq">FAQ</a></li>
       <li><a href="#install-app">Install App</a></li>
       <li><a href="#contact">Contact</a></li>
@@ -1017,6 +1203,7 @@
   <div class="mobile-menu" id="mobile-menu">
     <a href="#features" onclick="closeMobileMenu()">Features</a>
     <a href="#how-it-works" onclick="closeMobileMenu()">How it Works</a>
+    <a href="#pricing" onclick="closeMobileMenu()">Pricing</a>
     <a href="#faq" onclick="closeMobileMenu()">FAQ</a>
     <a href="#install-app" onclick="closeMobileMenu()">Install App</a>
     <a href="#contact" onclick="closeMobileMenu()">Contact</a>
@@ -1360,6 +1547,87 @@
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="container text-center">
+    <div class="section-badge reveal">Pricing</div>
+    <h2 class="section-title reveal">Simple, Transparent Pricing</h2>
+    <p class="section-subtitle reveal">Start free for 30 days. No credit card required.</p>
+
+    <div class="pricing-grid">
+
+      <!-- Free Trial -->
+      <div class="pricing-card reveal reveal-delay-1">
+        <div class="pricing-plan-name">Free Trial</div>
+        <div class="pricing-price free">
+          <span class="amount">FREE</span>
+        </div>
+        <div class="pricing-desc">for 30 days &nbsp;·&nbsp; No credit card required</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="pf-check">✓</span> All features unlocked</li>
+          <li><span class="pf-check">✓</span> Unlimited contracts</li>
+          <li><span class="pf-check">✓</span> Unlimited customers</li>
+          <li><span class="pf-check">✓</span> Unlimited technicians</li>
+          <li><span class="pf-check">✓</span> Service alerts &amp; notifications</li>
+          <li><span class="pf-check">✓</span> Full dashboard</li>
+          <li><span class="pf-check">✓</span> No credit card required</li>
+        </ul>
+        <a href="/signup" class="btn-pricing">Start Free Trial</a>
+      </div>
+
+      <!-- Basic -->
+      <div class="pricing-card reveal reveal-delay-2">
+        <div class="pricing-plan-name">Basic</div>
+        <div class="pricing-price">
+          <span class="currency">₹</span>
+          <span class="amount">399</span>
+          <span class="period">/month</span>
+        </div>
+        <div class="pricing-desc">Perfect for small contractors just getting started</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="pf-check">✓</span> Up to 50 contracts</li>
+          <li><span class="pf-check">✓</span> Unlimited customers</li>
+          <li><span class="pf-check">✓</span> Up to 5 technicians</li>
+          <li><span class="pf-check">✓</span> Service alerts &amp; notifications</li>
+          <li><span class="pf-check">✓</span> Full dashboard</li>
+          <li><span class="pf-check">✓</span> Service history</li>
+          <li><span class="pf-check">✓</span> Reports</li>
+          <li><span class="pf-check">✓</span> Priority support</li>
+        </ul>
+        <a href="/signup" class="btn-pricing">Get Started</a>
+      </div>
+
+      <!-- Pro -->
+      <div class="pricing-card pro reveal reveal-delay-3">
+        <div class="pricing-popular-badge">⭐ Most Popular</div>
+        <div class="pricing-plan-name">Pro</div>
+        <div class="pricing-price">
+          <span class="currency">₹</span>
+          <span class="amount">599</span>
+          <span class="period">/month</span>
+        </div>
+        <div class="pricing-desc">For growing businesses managing large client bases</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="pf-check">✓</span> Unlimited contracts</li>
+          <li><span class="pf-check">✓</span> Unlimited customers</li>
+          <li><span class="pf-check">✓</span> Unlimited technicians</li>
+          <li><span class="pf-check">✓</span> Everything in Basic</li>
+          <li><span class="pf-check">✓</span> Advanced reports</li>
+          <li><span class="pf-check">✓</span> Data export</li>
+          <li><span class="pf-check">✓</span> Dedicated support</li>
+        </ul>
+        <a href="/signup" class="btn-pricing btn-pricing-pro">Get Started</a>
+      </div>
+
+    </div>
+
+    <p class="pricing-note reveal"><span>All plans include free updates. Cancel anytime.</span></p>
   </div>
 </section>
 
