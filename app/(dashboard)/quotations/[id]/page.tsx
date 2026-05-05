@@ -54,6 +54,11 @@ export default function ViewQuotationPage() {
         .single()
 
       if (quotationError) throw quotationError
+      
+      if (!quotationData) {
+        throw new Error("Quotation not found")
+      }
+      
       setQuotation(quotationData as Quotation)
 
       // Load company profile
@@ -69,7 +74,7 @@ export default function ViewQuotationPage() {
     } catch (error) {
       console.error("Error loading quotation:", error)
       toast.error("Failed to load quotation")
-      router.push("/quotations")
+      setQuotation(null)
     } finally {
       setLoading(false)
     }
@@ -167,11 +172,11 @@ export default function ViewQuotationPage() {
       yPosition += 3
 
       // Items Table
-      const itemsData = quotation.items.map((item) => [
-        item.description,
-        item.quantity.toString(),
-        `₹${item.unit_price.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`,
-        `₹${item.amount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`,
+      const itemsData = (quotation.items ?? []).map((item) => [
+        item.description ?? '-',
+        (item.quantity ?? 0).toString(),
+        `₹${((item.unit_price ?? 0).toLocaleString("en-IN", { maximumFractionDigits: 2 }))}`,
+        `₹${((item.amount ?? 0).toLocaleString("en-IN", { maximumFractionDigits: 2 }))}`,
       ])
 
       autoTable(doc, {
@@ -213,16 +218,16 @@ export default function ViewQuotationPage() {
       doc.setTextColor(80, 80, 80)
       doc.text("Subtotal:", rightCol, yPosition)
       doc.setTextColor(0, 0, 0)
-      doc.text(`₹${quotation.subtotal.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`, pageW - margin - 5, yPosition, { align: "right" })
+      doc.text(`₹${((quotation.subtotal ?? 0).toLocaleString("en-IN", { maximumFractionDigits: 2 }))}`, pageW - margin - 5, yPosition, { align: "right" })
 
       yPosition += 5
 
       if (quotation.include_gst) {
         doc.setFontSize(9)
         doc.setTextColor(80, 80, 80)
-        doc.text(`GST (${quotation.gst_rate}%):`, rightCol, yPosition)
+        doc.text(`GST (${quotation.gst_rate ?? 0}%):`, rightCol, yPosition)
         doc.setTextColor(0, 0, 0)
-        doc.text(`₹${quotation.gst_amount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`, pageW - margin - 5, yPosition, { align: "right" })
+        doc.text(`₹${((quotation.gst_amount ?? 0).toLocaleString("en-IN", { maximumFractionDigits: 2 }))}`, pageW - margin - 5, yPosition, { align: "right" })
         yPosition += 5
       }
 
@@ -235,16 +240,16 @@ export default function ViewQuotationPage() {
       doc.setFont("helvetica", "bold")
       doc.setTextColor(...themeRgb)
       doc.text("TOTAL:", rightCol, yPosition + 4)
-      doc.text(`₹${quotation.total_amount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`, pageW - margin - 5, yPosition + 4, { align: "right" })
+      doc.text(`₹${((quotation.total_amount ?? 0).toLocaleString("en-IN", { maximumFractionDigits: 2 }))}`, pageW - margin - 5, yPosition + 4, { align: "right" })
 
       yPosition += 12
 
       // Amount in words
-      if (quotation.total_amount > 0) {
+      if ((quotation.total_amount ?? 0) > 0) {
         doc.setFontSize(8)
         doc.setFont("helvetica", "italic")
         doc.setTextColor(80, 80, 80)
-        const amountInWords = numberToWords(quotation.total_amount)
+        const amountInWords = numberToWords(quotation.total_amount ?? 0)
         const lines = doc.splitTextToSize(`Amount in words: ${amountInWords}`, pageW - 2 * margin - 10)
         doc.text(lines, margin, yPosition)
         yPosition += lines.length * 4 + 3
@@ -339,12 +344,12 @@ export default function ViewQuotationPage() {
     }
 
     // Create message
-    const itemsList = quotation.items
-      .map((item) => `• ${item.description} x${item.quantity} = ₹${item.amount.toLocaleString("en-IN")}`)
+    const itemsList = (quotation.items ?? [])
+      .map((item) => `• ${item.description ?? '-'} x${item.quantity ?? 0} = ₹${(item.amount ?? 0).toLocaleString("en-IN")}`)
       .join("%0A")
 
     const message = encodeURIComponent(
-      `Hi ${quotation.customer_name},%0A%0AI wanted to share the quotation for your request.%0A%0A*Quotation #${quotation.quotation_number}*%0A%0AItems:%0A${itemsList}%0A%0A*Total: ₹${quotation.total_amount.toLocaleString("en-IN")}*%0A%0APlease reply if you have any questions or would like to proceed.%0A%0AThank you!`
+      `Hi ${quotation.customer_name ?? '-'},%0A%0AI wanted to share the quotation for your request.%0A%0A*Quotation #${quotation.quotation_number ?? '-'}*%0A%0AItems:%0A${itemsList}%0A%0A*Total: ₹${(quotation.total_amount ?? 0).toLocaleString("en-IN")}*%0A%0APlease reply if you have any questions or would like to proceed.%0A%0AThank you!`
     )
 
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
@@ -391,13 +396,13 @@ export default function ViewQuotationPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">{quotation.quotation_number}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{quotation.quotation_number ?? '-'}</h1>
               <p className="text-muted-foreground">
-                {new Date(quotation.created_at).toLocaleDateString("en-IN", {
+                {quotation.created_at ? new Date(quotation.created_at).toLocaleDateString("en-IN", {
                   day: "2-digit",
                   month: "long",
                   year: "numeric",
-                })}
+                }) : '-'}
               </p>
             </div>
           </div>
@@ -414,24 +419,24 @@ export default function ViewQuotationPage() {
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
               <p className="text-sm text-muted-foreground">Name</p>
-              <p className="text-lg font-medium">{quotation.customer_name}</p>
+              <p className="text-lg font-medium">{quotation.customer_name ?? '-'}</p>
             </div>
             {quotation.customer_phone && (
               <div>
                 <p className="text-sm text-muted-foreground">Phone</p>
-                <p className="text-lg font-medium">{quotation.customer_phone}</p>
+                <p className="text-lg font-medium">{quotation.customer_phone ?? '-'}</p>
               </div>
             )}
             {quotation.customer_email && (
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
-                <p className="text-lg font-medium">{quotation.customer_email}</p>
+                <p className="text-lg font-medium">{quotation.customer_email ?? '-'}</p>
               </div>
             )}
             {quotation.customer_address && (
               <div className="sm:col-span-2">
                 <p className="text-sm text-muted-foreground">Address</p>
-                <p className="text-lg font-medium">{quotation.customer_address}</p>
+                <p className="text-lg font-medium">{quotation.customer_address ?? '-'}</p>
               </div>
             )}
           </CardContent>
@@ -454,12 +459,12 @@ export default function ViewQuotationPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {quotation.items.map((item, index) => (
+                  {(quotation.items ?? []).map((item, index) => (
                     <tr key={item.id} className={index % 2 === 0 ? "bg-secondary/30" : ""}>
-                      <td className="py-2 px-2">{item.description}</td>
-                      <td className="text-center py-2 px-2">{item.quantity}</td>
-                      <td className="text-right py-2 px-2">₹{item.unit_price.toLocaleString("en-IN")}</td>
-                      <td className="text-right py-2 px-2 font-medium">₹{item.amount.toLocaleString("en-IN")}</td>
+                      <td className="py-2 px-2">{item.description ?? '-'}</td>
+                      <td className="text-center py-2 px-2">{item.quantity ?? 0}</td>
+                      <td className="text-right py-2 px-2">₹{((item.unit_price ?? 0).toLocaleString("en-IN"))}</td>
+                      <td className="text-right py-2 px-2 font-medium">₹{((item.amount ?? 0).toLocaleString("en-IN"))}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -473,17 +478,17 @@ export default function ViewQuotationPage() {
           <CardContent className="pt-6 space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal:</span>
-              <span className="font-medium">₹{quotation.subtotal.toLocaleString("en-IN")}</span>
+              <span className="font-medium">₹{((quotation.subtotal ?? 0).toLocaleString("en-IN"))}</span>
             </div>
             {quotation.include_gst && (
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">GST ({quotation.gst_rate}%):</span>
-                <span className="font-medium">₹{quotation.gst_amount.toLocaleString("en-IN")}</span>
+                <span className="text-muted-foreground">GST ({quotation.gst_rate ?? 0}%):</span>
+                <span className="font-medium">₹{((quotation.gst_amount ?? 0).toLocaleString("en-IN"))}</span>
               </div>
             )}
             <div className="border-t border-border pt-3 flex justify-between text-lg font-bold">
               <span>Total:</span>
-              <span className="text-primary">₹{quotation.total_amount.toLocaleString("en-IN")}</span>
+              <span className="text-primary">₹{((quotation.total_amount ?? 0).toLocaleString("en-IN"))}</span>
             </div>
           </CardContent>
         </Card>
