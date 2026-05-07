@@ -362,17 +362,17 @@ export default function ViewQuotationPage() {
         doc.setFontSize(9)
         doc.setTextColor(0, 0, 0)
 
-        doc.text('Subtotal:', 155, y, { align: 'right' })
+        doc.text('Subtotal:', 160, y, { align: 'right' })
         doc.text('Rs. ' + subtotal.toLocaleString('en-IN'),
           195, y, { align: 'right' })
 
         y += 4
-        doc.text('SGST (9%):', 155, y, { align: 'right' })
+        doc.text('SGST (9%):', 160, y, { align: 'right' })
         doc.text('Rs. ' + sgst.toLocaleString('en-IN'),
           195, y, { align: 'right' })
 
         y += 4
-        doc.text('CGST (9%):', 155, y, { align: 'right' })
+        doc.text('CGST (9%):', 160, y, { align: 'right' })
         doc.text('Rs. ' + cgst.toLocaleString('en-IN'),
           195, y, { align: 'right' })
 
@@ -380,18 +380,18 @@ export default function ViewQuotationPage() {
         y += 5
         doc.setDrawColor(0, 0, 0)
         doc.setLineWidth(0.3)
-        doc.line(130, y, 195, y)
+        doc.line(135, y, 195, y)
 
         y += 3
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(10)
-        doc.text('Total:', 155, y, { align: 'right' })
+        doc.text('Total:', 160, y, { align: 'right' })
         doc.text('Rs. ' + grandTotal.toLocaleString('en-IN'),
           195, y, { align: 'right' })
       } else {
         doc.setFont('helvetica', 'normal')
         doc.setFontSize(9)
-        doc.text('Total:', 155, y, { align: 'right' })
+        doc.text('Total:', 160, y, { align: 'right' })
         doc.text('Rs. ' + subtotal.toLocaleString('en-IN'),
           195, y, { align: 'right' })
       }
