@@ -386,7 +386,7 @@ export default function NewQuotationPage() {
         {/* Notes */}
         <Card>
           <CardHeader>
-            <CardTitle>Additional Notes</CardTitle>
+            <CardTitle>Terms & Conditions</CardTitle>
             <CardDescription>Add any additional terms or conditions</CardDescription>
           </CardHeader>
           <CardContent>
