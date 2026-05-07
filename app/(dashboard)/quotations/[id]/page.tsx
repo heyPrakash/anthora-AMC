@@ -377,12 +377,12 @@ export default function ViewQuotationPage() {
           195, y, { align: 'right' })
 
         // Divider line above Grand Total
-        y += 6
+        y += 3
         doc.setDrawColor(0, 0, 0)
         doc.setLineWidth(0.3)
         doc.line(140, y, 195, y)
 
-        y += 4
+        y += 3
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(10)
         doc.text('Total:', 160, y, { align: 'right' })
