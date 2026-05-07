@@ -380,7 +380,7 @@ export default function ViewQuotationPage() {
         y += 5
         doc.setDrawColor(0, 0, 0)
         doc.setLineWidth(0.3)
-        doc.line(170, y, 195, y)
+        doc.line(160, y, 195, y)
 
         y += 3
         doc.setFont('helvetica', 'bold')
