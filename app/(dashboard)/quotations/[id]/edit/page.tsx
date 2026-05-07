@@ -412,7 +412,7 @@ export default function EditQuotationPage() {
         {/* Notes */}
         <Card>
           <CardHeader>
-            <CardTitle>Additional Notes</CardTitle>
+            <CardTitle>Terms & Conditions</CardTitle>
             <CardDescription>Update additional terms or conditions</CardDescription>
           </CardHeader>
           <CardContent>
