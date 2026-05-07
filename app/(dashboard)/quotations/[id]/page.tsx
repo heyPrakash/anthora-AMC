@@ -362,17 +362,17 @@ export default function ViewQuotationPage() {
         doc.setFontSize(9)
         doc.setTextColor(0, 0, 0)
 
-        doc.text('Subtotal:', 150, y, { align: 'right' })
+        doc.text('Subtotal:', 155, y, { align: 'right' })
         doc.text('Rs. ' + subtotal.toLocaleString('en-IN'),
           195, y, { align: 'right' })
 
         y += 4
-        doc.text('SGST (9%):', 150, y, { align: 'right' })
+        doc.text('SGST (9%):', 155, y, { align: 'right' })
         doc.text('Rs. ' + sgst.toLocaleString('en-IN'),
           195, y, { align: 'right' })
 
         y += 4
-        doc.text('CGST (9%):', 150, y, { align: 'right' })
+        doc.text('CGST (9%):', 155, y, { align: 'right' })
         doc.text('Rs. ' + cgst.toLocaleString('en-IN'),
           195, y, { align: 'right' })
 
@@ -385,13 +385,13 @@ export default function ViewQuotationPage() {
         y += 3
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(10)
-        doc.text('Total:', 170, y, { align: 'right' })
+        doc.text('Total:', 155, y, { align: 'right' })
         doc.text('Rs. ' + grandTotal.toLocaleString('en-IN'),
           195, y, { align: 'right' })
       } else {
         doc.setFont('helvetica', 'normal')
         doc.setFontSize(9)
-        doc.text('Total:', 180, y, { align: 'right' })
+        doc.text('Total:', 155, y, { align: 'right' })
         doc.text('Rs. ' + subtotal.toLocaleString('en-IN'),
           195, y, { align: 'right' })
       }
