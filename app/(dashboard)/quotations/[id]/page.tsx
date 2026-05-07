@@ -137,7 +137,7 @@ export default function ViewQuotationPage() {
   const calculateTotals = () => {
     if (!quotation) return { subtotal: 0, sgst: 0, cgst: 0, grandTotal: 0 }
     const items = quotation.items ?? []
-    const subtotal = items.reduce((sum, item) =>
+    const subtotal = items.reduce((sum, item) => 
       sum + (Number(item.qty ?? item.quantity ?? 1) * Number(item.rate ?? item.unit_price ?? 0)), 0)
     const includeGst = quotation.include_gst ?? true
     const sgst = includeGst ? Math.round(subtotal * 0.09) : 0
@@ -191,6 +191,7 @@ export default function ViewQuotationPage() {
       let y = margin
 
       // ===== HEADER SECTION =====
+      // Left side: Logo + Company info
       let logoX = margin
       let logoAdded = false
       try {
@@ -239,7 +240,7 @@ export default function ViewQuotationPage() {
         doc.text(`Email: ${safeStr(profile.email)}`, infoX, infoY)
       }
 
-      // Header bottom line — thin colored line in theme color
+      // Header bottom line (CHANGE 1: Thin colored line)
       y += 28
       const headerBottomY = y
       doc.setDrawColor(tr, tg, tb)
@@ -253,7 +254,7 @@ export default function ViewQuotationPage() {
       doc.setTextColor(0, 0, 0)
       doc.text(safeStr(quotation.quote_no ?? ("QT-" + quotation.id)), margin, y)
 
-      const formattedDate = quotation.created_at
+      const formattedDate = quotation.created_at 
         ? new Date(quotation.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })
         : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })
       doc.text(`DATE: ${formattedDate}`, pageW - margin, y, { align: "right" })
@@ -354,8 +355,7 @@ export default function ViewQuotationPage() {
         margin: { left: margin, right: margin },
       })
 
-      // ===== TOTALS SECTION — FIXED SPACING =====
-      y = (doc as any).lastAutoTable.finalY + 4  // was +8, now +4
+      y = (doc as any).lastAutoTable.finalY + 8
 
       if (includeGst) {
         doc.setFont('helvetica', 'normal')
@@ -363,38 +363,41 @@ export default function ViewQuotationPage() {
         doc.setTextColor(0, 0, 0)
 
         doc.text('Subtotal:', 150, y, { align: 'right' })
-        doc.text('Rs. ' + subtotal.toLocaleString('en-IN'), 195, y, { align: 'right' })
+        doc.text('Rs. ' + subtotal.toLocaleString('en-IN'),
+          195, y, { align: 'right' })
 
-        y += 3  // was 4, now 3
+        y += 4
         doc.text('SGST (9%):', 150, y, { align: 'right' })
-        doc.text('Rs. ' + sgst.toLocaleString('en-IN'), 195, y, { align: 'right' })
+        doc.text('Rs. ' + sgst.toLocaleString('en-IN'),
+          195, y, { align: 'right' })
 
-        y += 3  // was 4, now 3
+        y += 4
         doc.text('CGST (9%):', 150, y, { align: 'right' })
-        doc.text('Rs. ' + cgst.toLocaleString('en-IN'), 195, y, { align: 'right' })
+        doc.text('Rs. ' + cgst.toLocaleString('en-IN'),
+          195, y, { align: 'right' })
 
-        // Divider line above Total
-        y += 2  // was 4, now 2
+        // Divider line above Grand Total
+        y += 4
         doc.setDrawColor(0, 0, 0)
         doc.setLineWidth(0.3)
         doc.line(130, y, 195, y)
 
-        y += 2  // was 3, now 2
+        y += 3
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(10)
         doc.text('Total:', 150, y, { align: 'right' })
-        doc.text('Rs. ' + grandTotal.toLocaleString('en-IN'), 195, y, { align: 'right' })
+        doc.text('Rs. ' + grandTotal.toLocaleString('en-IN'),
+          195, y, { align: 'right' })
       } else {
         doc.setFont('helvetica', 'normal')
         doc.setFontSize(9)
-        doc.setTextColor(0, 0, 0)
         doc.text('Total:', 150, y, { align: 'right' })
-        doc.text('Rs. ' + subtotal.toLocaleString('en-IN'), 195, y, { align: 'right' })
+        doc.text('Rs. ' + subtotal.toLocaleString('en-IN'),
+          195, y, { align: 'right' })
       }
 
       // ===== TERMS & CONDITIONS =====
       if (quotation.notes) {
-        y += 6
         doc.setFontSize(9)
         doc.setFont("helvetica", "bold")
         doc.setTextColor(0, 0, 0)
@@ -408,17 +411,19 @@ export default function ViewQuotationPage() {
       }
       y += 4
 
-      // ===== FOOTER — Thanking you right aligned =====
-      y += 10
+      // ===== FOOTER =====
+      // Right-aligned signature block
+      y += 14
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(9)
       doc.setTextColor(0, 0, 0)
       doc.text('Thanking you,', 195, y, { align: 'right' })
-      doc.text('Yours faithfully,', 195, y + 6, { align: 'right' })
+      doc.text('Yours faithfully,', 195, y+6, { align: 'right' })
       doc.setFont('helvetica', 'bold')
-      doc.text('For ' + safeStr(profile?.company_name), 195, y + 12, { align: 'right' })
+      doc.text('For ' + safeStr(profile?.company_name),
+        195, y+12, { align: 'right' })
 
-      // Bottom: Generated by Remindi
+      // Bottom: Generated by Remindi (centered, small gray)
       doc.setFontSize(8)
       doc.setTextColor(150, 150, 150)
       doc.setFont("helvetica", "normal")
@@ -707,7 +712,7 @@ export default function ViewQuotationPage() {
                     <span className="font-medium">₹{cgst.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="border-t border-border pt-2 mt-1 flex justify-between w-full">
-                    <span className="text-lg font-bold">Total:</span>
+                    <span className="text-lg font-bold">Grand Total:</span>
                     <span className="text-lg font-bold text-blue-600">
                       ₹{grandTotal.toLocaleString("en-IN")}
                     </span>
@@ -739,4 +744,4 @@ export default function ViewQuotationPage() {
       </div>
     </DashboardLayout>
   )
-}
+    }
