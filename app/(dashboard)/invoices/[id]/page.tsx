@@ -427,7 +427,7 @@ export default function ViewInvoicePage() {
         doc.setFontSize(9)
         doc.setFont("helvetica", "bold")
         doc.setTextColor(0, 0, 0)
-        doc.text("Notes:", margin, y)
+        doc.text("Terms & Conditions:", margin, y)
         y += 4
         doc.setFont("helvetica", "normal")
         doc.setTextColor(80, 80, 80)
