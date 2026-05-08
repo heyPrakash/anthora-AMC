@@ -350,19 +350,20 @@ export default function ViewInvoicePage() {
         { align: 'right' })
 
       y += 5
-      // Order number on second line on right side
+      // Due date on second line on right side
+      doc.setFontSize(9)
+      doc.setTextColor(220, 38, 38)
+      doc.text('Due: ' + safeDate(invoice.due_date),
+        pageW - margin, y, { align: 'right' })
+      
+      y += 5
+      // Order number on third line on right side (only if exists)
       doc.setFontSize(9)
       doc.setFont("helvetica", "normal")
       doc.setTextColor(0, 0, 0)
       if (invoice.order_no) {
         doc.text('Order No: ' + safeStr(invoice.order_no), pageW - margin, y, { align: 'right' })
       }
-      y += 5
-      // Due date in red below (third line)
-      doc.setFontSize(9)
-      doc.setTextColor(220, 38, 38)
-      doc.text('Due: ' + safeDate(invoice.due_date),
-        pageW - margin, y, { align: 'right' })
       doc.setTextColor(0, 0, 0)
 
       // ===== CLIENT BLOCK =====
