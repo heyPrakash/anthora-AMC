@@ -358,7 +358,7 @@ export default function ViewInvoicePage() {
         doc.text('Order No: ' + safeStr(invoice.order_no), pageW - margin, y, { align: 'right' })
         y += 5
       }
-      // Due date in red below order number or date
+      // Due date in red below
       doc.setFontSize(9)
       doc.setTextColor(220, 38, 38)
       doc.text('Due: ' + safeDate(invoice.due_date),
