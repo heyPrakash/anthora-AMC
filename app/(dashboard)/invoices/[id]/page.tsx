@@ -760,7 +760,7 @@ export default function ViewInvoicePage() {
         {invoice.notes && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Notes</CardTitle>
+              <CardTitle className="text-base">Terms & Conditions</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{invoice.notes}</p>
