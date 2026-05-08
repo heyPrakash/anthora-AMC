@@ -26,6 +26,16 @@ import { useAuth } from "@/lib/auth-context"
 import { Plus, Search, Eye, Trash2, Edit } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 function getStatusBadge(status: string) {
   const statusLower = (status || "").toLowerCase()
@@ -47,6 +57,9 @@ export default function QuotationsPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [quotationToDelete, setQuotationToDelete] = useState<Quotation | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     loadQuotations()
@@ -74,23 +87,26 @@ export default function QuotationsPage() {
     handleFilter()
   }, [searchTerm, filterStatus, quotations])
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this quotation?")) {
-      try {
-        const { error } = await supabase
-          .from("quotations")
-          .delete()
-          .eq("id", id)
-
-        if (error) throw error
-        setQuotations(quotations.filter(q => q.id !== id))
-        toast.success("Quotation deleted successfully")
-      } catch (error) {
-        console.error("Error deleting quotation:", error)
-        toast.error("Failed to delete quotation")
-      }
-    }
+  const handleDelete = async () => {
+  if (!quotationToDelete) return
+  setDeleting(true)
+  try {
+    const { error } = await supabase
+      .from("quotations")
+      .delete()
+      .eq("id", quotationToDelete.id)
+    if (error) throw error
+    setQuotations(quotations.filter(q => q.id !== quotationToDelete.id))
+    toast.success("Quotation deleted successfully")
+    setDeleteDialogOpen(false)
+    setQuotationToDelete(null)
+  } catch (error) {
+    console.error("Error deleting quotation:", error)
+    toast.error("Failed to delete quotation")
+  } finally {
+    setDeleting(false)
   }
+}
 
   const loadQuotations = async () => {
     try {
@@ -233,7 +249,7 @@ export default function QuotationsPage() {
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              onClick={() => handleDelete(quotation.id)}
+                              onClick={() => { setQuotationToDelete(quotation); setDeleteDialogOpen(true) }}
                               className="text-red-600 hover:text-red-700 hover:bg-red-50"
                               title="Delete Quotation"
                             >
@@ -251,6 +267,26 @@ export default function QuotationsPage() {
           </CardContent>
         </Card>
       </div>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Delete Quotation</AlertDialogTitle>
+      <AlertDialogDescription>
+        Are you sure you want to delete {quotationToDelete?.quote_no}? This action cannot be undone.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction
+        onClick={handleDelete}
+        disabled={deleting}
+        className="bg-red-600 hover:bg-red-700"
+      >
+        {deleting ? "Deleting..." : "Delete"}
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
     </DashboardLayout>
   )
 }
