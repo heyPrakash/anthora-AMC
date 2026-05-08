@@ -340,7 +340,7 @@ export default function ViewQuotationPage() {
       }
 
       // Header bottom line (CHANGE 1: Thin colored line)
-      y += 28
+      y += 31
       const headerBottomY = y
       doc.setDrawColor(tr, tg, tb)
       doc.setLineWidth(0.5)
