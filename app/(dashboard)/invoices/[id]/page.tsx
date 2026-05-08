@@ -323,7 +323,7 @@ export default function ViewInvoicePage() {
       }
 
       // Header bottom line
-      y += 28
+      y += 31
       const headerBottomY = y
       doc.setDrawColor(tr, tg, tb)
       doc.setLineWidth(0.5)
