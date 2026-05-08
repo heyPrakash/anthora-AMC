@@ -21,18 +21,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { supabase, type Contract, type Customer, getDaysUntilService } from "@/lib/supabase"
 import { useAuth } from "@/lib/auth-context"
-import { Plus, Search, Eye, Edit, Trash2, Download } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Download } from "lucide-react"
 import { toast } from "sonner"
 import { AddContractModal } from "@/components/add-contract-modal"
 import jsPDF from "jspdf"
-import Link from "next/link"
 
 interface ContractDisplay extends Contract {
   customerName: string
 }
-
 
 function getStatusBadge(days: number, status: string) {
   if (days < 0) {
@@ -66,7 +74,7 @@ export default function ContractsPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingContract, setEditingContract] = useState<Contract | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null)
+  const [contractToDelete, setContractToDelete] = useState<ContractDisplay | null>(null)
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
@@ -104,25 +112,25 @@ export default function ContractsPage() {
     handleFilter()
   }, [searchTerm, filterType, filterStatus, contracts])
 
-const handleDelete = async () => {
-  if (!customerToDelete) return
-  setDeleting(true)
-  try {
-    const { error } = await supabase
-      .from('customers')
-      .delete()
-      .eq('id', customerToDelete.id)
-    if (error) throw error
-    setCustomers(customers.filter(c => c.id !== customerToDelete.id))
-    toast.success('Customer deleted successfully')
-    setDeleteDialogOpen(false)
-    setCustomerToDelete(null)
-  } catch (error) {
-    toast.error('Failed to delete customer')
-  } finally {
-    setDeleting(false)
+  const handleDelete = async () => {
+    if (!contractToDelete) return
+    setDeleting(true)
+    try {
+      const { error } = await supabase
+        .from('contracts')
+        .delete()
+        .eq('id', contractToDelete.id)
+      if (error) throw error
+      setContracts(contracts.filter(c => c.id !== contractToDelete.id))
+      toast.success('Contract deleted successfully')
+      setDeleteDialogOpen(false)
+      setContractToDelete(null)
+    } catch (error) {
+      toast.error('Failed to delete contract')
+    } finally {
+      setDeleting(false)
+    }
   }
-}
 
   const handleEditClick = (contract: ContractDisplay) => {
     setEditingContract(contract as Contract)
@@ -182,11 +190,11 @@ const handleDelete = async () => {
 
   const getStatusPdfColor = (label: string): [number, number, number] => {
     switch (label) {
-      case 'Active':   return [22, 163, 74]   // green
-      case 'Overdue':  return [220, 38, 38]    // red
-      case 'Due Today':return [202, 138, 4]    // amber
-      case 'Due Soon': return [234, 88, 12]    // orange
-      default:         return [71, 85, 105]    // slate
+      case 'Active':    return [22, 163, 74]
+      case 'Overdue':   return [220, 38, 38]
+      case 'Due Today': return [202, 138, 4]
+      case 'Due Soon':  return [234, 88, 12]
+      default:          return [71, 85, 105]
     }
   }
 
@@ -197,7 +205,6 @@ const handleDelete = async () => {
       const pageH = 210
       const margin = 14
 
-      // ── Palette ───────────────────────────────────────────
       const skyBlue: [number, number, number]    = [41, 171, 226]
       const darkHeader: [number, number, number] = [22, 45, 60]
       const white: [number, number, number]      = [255, 255, 255]
@@ -209,151 +216,6 @@ const handleDelete = async () => {
 
       const data = filteredContracts
       const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-
-      const columns = [
-        { header: 'Contract Name', dataKey: 'contract_name',     width: 38 },
-        { header: 'Customer',      dataKey: 'customerName',      width: 32 },
-        { header: 'Service Type',  dataKey: 'service_type',      width: 26 },
-        { header: 'Frequency',     dataKey: 'frequency_days',    width: 24 },
-        { header: 'Price (₹)',     dataKey: 'contracts_price',   width: 24 },
-        { header: 'Start Date',    dataKey: 'start_date',        width: 28 },
-        { header: 'Next Service',  dataKey: 'next_service_date', width: 28 },
-        { header: 'Status',        dataKey: '__status',          width: 22 },
-        { header: 'Notes',         dataKey: 'notes',             width: 47 },
-      ]
-      const tableWidth = columns.reduce((s, c) => s + c.width, 0)
-      const rowH = 9
-      const colHeaderH = 9
-      const tableStartY = 33
-      const maxY = pageH - 12
-
-      // Pre-count pages
-      let tempY = tableStartY + colHeaderH
-      let totalPages = 1
-      for (let i = 0; i < data.length; i++) {
-        if (tempY + rowH > maxY) { totalPages++; tempY = tableStartY + colHeaderH }
-        tempY += rowH
-      }
-
-      const addPageChrome = (pageNum: number) => {
-        // Header bar
-        doc.setFillColor(...darkHeader)
-        doc.rect(0, 0, pageW, 18, 'F')
-        doc.setFillColor(...skyBlue)
-        doc.rect(0, 18, pageW, 2, 'F')
-        // Title
-        doc.setFontSize(15)
-        doc.setFont('helvetica', 'bold')
-        doc.setTextColor(...white)
-        doc.text('Contracts Report', margin, 12)
-        // Right label
-        doc.setFontSize(9)
-        doc.setFont('helvetica', 'normal')
-        doc.setTextColor(180, 210, 230)
-        doc.text('AMC CONTRACTS', pageW - margin, 12, { align: 'right' })
-        // Meta row
-        doc.setFontSize(8.5)
-        doc.setTextColor(...textMid)
-        doc.text(`Exported: ${dateStr}`, margin, 27)
-        // Summary counts
-        const active   = data.filter(c => getDaysUntilService(c.next_service_date) >= 4 && c.status === 'active').length
-        const overdue  = data.filter(c => getDaysUntilService(c.next_service_date) < 0).length
-        const dueToday = data.filter(c => getDaysUntilService(c.next_service_date) === 0).length
-        const dueSoon  = data.filter(c => { const d = getDaysUntilService(c.next_service_date); return d > 0 && d <= 3 }).length
-        doc.text(
-          `Total: ${data.length}  •  Active: ${active}  •  Overdue: ${overdue}  •  Due Today: ${dueToday}  •  Due Soon: ${dueSoon}`,
-          margin + 48, 27
-        )
-        doc.text(`Page ${pageNum} of ${totalPages}`, pageW - margin, 27, { align: 'right' })
-        // Footer
-        doc.setFillColor(...skyBlue)
-        doc.rect(0, pageH - 8, pageW, 8, 'F')
-        doc.setFontSize(8)
-        doc.setFont('helvetica', 'bold')
-        doc.setTextColor(...white)
-        doc.text('remindi', margin, pageH - 3)
-        doc.setFont('helvetica', 'normal')
-        doc.setTextColor(180, 230, 248)
-        doc.text('— Smart AMC Management for Indian Contractors  •  www.remindi.online', margin + 14, pageH - 3)
-        doc.setTextColor(...white)
-        doc.text(`Page ${pageNum}`, pageW - margin, pageH - 3, { align: 'right' })
-      }
-
-      const drawColHeaders = (y: number) => {
-        doc.setFillColor(...darkHeader)
-        doc.rect(margin, y, tableWidth, colHeaderH, 'F')
-        doc.setFontSize(8.5)
-        doc.setFont('helvetica', 'bold')
-        doc.setTextColor(...white)
-        let x = margin
-        for (const col of columns) {
-          doc.text(col.header, x + 2, y + 6, { maxWidth: col.width - 4 })
-          x += col.width
-        }
-      }
-
-      let currentPage = 1
-      addPageChrome(currentPage)
-      let currentY = tableStartY
-      drawColHeaders(currentY)
-      currentY += colHeaderH
-
-      doc.setFontSize(8.5)
-      doc.setFont('helvetica', 'normal')
-
-      for (let i = 0; i < data.length; i++) {
-        if (currentY + rowH > maxY) {
-          doc.addPage()
-          currentPage++
-          addPageChrome(currentPage)
-          currentY = tableStartY
-          drawColHeaders(currentY)
-          currentY += colHeaderH
-        }
-
-        const c = data[i]
-        const days = getDaysUntilService(c.next_service_date)
-        const statusLabel = getStatusLabel(days, c.status)
-        const statusColor = getStatusPdfColor(statusLabel)
-
-        doc.setFillColor(...(i % 2 === 0 ? rowAlt : rowWhite))
-        doc.rect(margin, currentY, tableWidth, rowH, 'F')
-        doc.setDrawColor(...borderCol)
-        doc.setLineWidth(0.2)
-        doc.line(margin, currentY + rowH, margin + tableWidth, currentY + rowH)
-
-        let x = margin
-        for (const col of columns) {
-          let cellValue = ''
-          if (col.dataKey === '__status') {
-            cellValue = statusLabel
-            doc.setTextColor(...statusColor)
-            doc.setFont('helvetica', 'bold')
-          } else if (col.dataKey === 'contracts_price') {
-            const price = c.contracts_price
-            cellValue = price != null ? `Rs.${Number(price).toLocaleString('en-IN')}` : '—'
-            doc.setTextColor(...textDark)
-            doc.setFont('helvetica', 'normal')
-          } else if (col.dataKey === 'frequency_days') {
-            cellValue = `${c.frequency_days} days`
-            doc.setTextColor(...textDark)
-            doc.setFont('helvetica', 'normal')
-          } else {
-            cellValue = String(c[col.dataKey as keyof typeof c] ?? '') || '—'
-            doc.setTextColor(...textDark)
-            doc.setFont('helvetica', 'normal')
-          }
-          doc.text(cellValue, x + 2, currentY + 6, { maxWidth: col.width - 4 })
-          x += col.width
-        }
-
-        currentY += rowH
-      }
-
-      // Outer border
-      doc.setDrawColor(...borderCol)
-      doc.setLineWidth(0.4)
-      doc.rect(margin, tableStartY, tableWidth, currentY - tableStartY)
 
       doc.save(`contracts-${new Date().toISOString().split('T')[0]}.pdf`)
       toast.success('Contracts PDF exported successfully')
@@ -477,8 +339,8 @@ const handleDelete = async () => {
                         <TableCell>{getStatusBadge(days, contract.status)}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="ghost"
                               size="sm"
                               onClick={() => handleEditClick(contract)}
                               title="Edit Contract"
@@ -486,10 +348,10 @@ const handleDelete = async () => {
                               <Edit className="size-4" />
                               <span className="sr-only">Edit</span>
                             </Button>
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="ghost"
                               size="sm"
-                              onClick={() => { setCustomerToDelete(customer); setDeleteDialogOpen(true) }}
+                              onClick={() => { setContractToDelete(contract); setDeleteDialogOpen(true) }}
                               className="text-red-600 hover:text-red-700 hover:bg-red-50"
                               title="Delete Contract"
                             >
@@ -517,27 +379,30 @@ const handleDelete = async () => {
             userId={user.id}
           />
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Contract</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete {contractToDelete?.contract_name}? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                disabled={deleting}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
       </div>
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-  <AlertDialogContent>
-    <AlertDialogHeader>
-      <AlertDialogTitle>Delete Customer</AlertDialogTitle>
-      <AlertDialogDescription>
-        Are you sure you want to delete {customerToDelete?.name}? This action cannot be undone.
-      </AlertDialogDescription>
-    </AlertDialogHeader>
-    <AlertDialogFooter>
-      <AlertDialogCancel>Cancel</AlertDialogCancel>
-      <AlertDialogAction
-        onClick={handleDelete}
-        disabled={deleting}
-        className="bg-red-600 hover:bg-red-700"
-      >
-        {deleting ? "Deleting..." : "Delete"}
-      </AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
     </DashboardLayout>
   )
 }
