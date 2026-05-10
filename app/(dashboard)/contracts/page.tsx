@@ -218,15 +218,14 @@ export default function ContractsPage() {
       const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 
       const columns = [
-        { header: 'Contract Name', dataKey: 'contract_name',     width: 38 },
-        { header: 'Customer',      dataKey: 'customerName',      width: 32 },
+        { header: 'Contract Name', dataKey: 'contract_name',     width: 55 },
+        { header: 'Customer',      dataKey: 'customerName',      width: 42 },
         { header: 'Service Type',  dataKey: 'service_type',      width: 26 },
         { header: 'Frequency',     dataKey: 'frequency_days',    width: 24 },
-        { header: 'Price (₹)',     dataKey: 'contracts_price',   width: 24 },
+        { header: 'Price (Rs.)',     dataKey: 'contracts_price',   width: 24 },
         { header: 'Start Date',    dataKey: 'start_date',        width: 28 },
         { header: 'Next Service',  dataKey: 'next_service_date', width: 28 },
         { header: 'Status',        dataKey: '__status',          width: 22 },
-        { header: 'Notes',         dataKey: 'notes',             width: 47 },
       ]
       const tableWidth = columns.reduce((s, c) => s + c.width, 0)
       const rowH = 9
