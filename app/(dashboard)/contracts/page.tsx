@@ -451,6 +451,7 @@ export default function ContractsPage() {
             ) : filteredContracts.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">No contracts found</div>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -510,6 +511,7 @@ export default function ContractsPage() {
                   })}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
