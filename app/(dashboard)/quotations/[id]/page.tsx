@@ -315,7 +315,7 @@ export default function ViewQuotationPage() {
             reader.readAsDataURL(blob)
           })
           const bannerW = pageW - (margin * 2)
-          const bannerH = 22  // fixed height matching original header height
+          const bannerH = Math.round((pageW - margin * 2) / (1462 / 396))
           doc.addImage(base64, "PNG", margin, y, bannerW, bannerH)
           y += bannerH
         } catch (e) { /* skip banner silently, fall through */ }
