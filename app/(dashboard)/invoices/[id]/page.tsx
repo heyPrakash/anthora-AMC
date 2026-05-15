@@ -469,15 +469,24 @@ y += 6
         doc.text('Total:', 160, y, { align: 'right' })
         doc.text('Rs. ' + grandTotal.toLocaleString('en-IN'),
           195, y, { align: 'right' })
-      } else {
-        doc.setFont('helvetica', 'normal')
-        doc.setFontSize(9)
-        doc.text('Total:', 160, y, { align: 'right' })
-        doc.text('Rs. ' + subtotal.toLocaleString('en-IN'),
-          195, y, { align: 'right' })
-      }
+  } else {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.text('Total:', 160, y, { align: 'right' })
+    doc.text('Rs. ' + subtotal.toLocaleString('en-IN'),
+      195, y, { align: 'right' })
+  }
 
-      // ===== PAYMENT DETAILS =====
+  // ===== IN WORDS =====
+  y += 8
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.setTextColor(0, 0, 0)
+  const finalAmount = invoice.include_gst ? grandTotal : subtotal
+  doc.text('Rupees ' + toWords(finalAmount) + ' Only', margin, y)
+  y += 6
+
+  // ===== PAYMENT DETAILS =====
       y += 10
       doc.setFontSize(9)
       doc.setFont("helvetica", "bold")

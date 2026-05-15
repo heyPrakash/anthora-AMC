@@ -26,6 +26,7 @@ export default function NewQuotationPage() {
   const [customerDistrict, setCustomerDistrict] = useState("")
   const [customerState, setCustomerState] = useState("")
   const [customerPinCode, setCustomerPinCode] = useState("")
+  const [orderNo, setOrderNo] = useState("")
   const [subject, setSubject] = useState("")
   const [bodyText, setBodyText] = useState("")
   const [items, setItems] = useState<QuotationItem[]>([
@@ -107,6 +108,7 @@ export default function NewQuotationPage() {
         .insert({
           user_id: user.id,
           quote_no: quoteNo,
+          order_no: orderNo || null,
           client_name: customerName,
           client_address: customerAddress,
           client_district: customerDistrict,
@@ -174,6 +176,18 @@ export default function NewQuotationPage() {
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Enter customer name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="order-no">
+                Order Number <span className="text-xs text-muted-foreground">(Optional)</span>
+              </Label>
+              <Input
+                id="order-no"
+                value={orderNo}
+                onChange={(e) => setOrderNo(e.target.value)}
+                placeholder="e.g. PO-2026-001"
               />
             </div>
 
