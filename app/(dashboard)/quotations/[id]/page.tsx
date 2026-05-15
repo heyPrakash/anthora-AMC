@@ -523,15 +523,24 @@ export default function ViewQuotationPage() {
         doc.text('Total:', 160, y, { align: 'right' })
         doc.text('Rs. ' + grandTotal.toLocaleString('en-IN'),
           195, y, { align: 'right' })
-      } else {
-        doc.setFont('helvetica', 'normal')
-        doc.setFontSize(9)
-        doc.text('Total:', 160, y, { align: 'right' })
-        doc.text('Rs. ' + subtotal.toLocaleString('en-IN'),
-          195, y, { align: 'right' })
-      }
+  } else {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.text('Total:', 160, y, { align: 'right' })
+    doc.text('Rs. ' + subtotal.toLocaleString('en-IN'),
+      195, y, { align: 'right' })
+  }
 
-      // ===== TERMS & CONDITIONS =====
+  // ===== IN WORDS =====
+  y += 8
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.setTextColor(0, 0, 0)
+  const finalAmount = includeGst ? grandTotal : subtotal
+  doc.text('Rupees ' + toWords(finalAmount) + ' Only', margin, y)
+  y += 6
+
+  // ===== TERMS & CONDITIONS =====
       if (quotation.notes) {
         doc.setFontSize(9)
         doc.setFont("helvetica", "bold")
@@ -615,12 +624,17 @@ export default function ViewQuotationPage() {
                 <ArrowLeft className="size-4" />
               </Button>
             </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                {quotation.quote_no ?? ("QT-" + quotation.id)}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                {formatDate(quotation.created_at)}
+  <div>
+  <h1 className="text-2xl font-bold text-foreground">
+  {quotation.quote_no ?? ("QT-" + quotation.id)}
+  </h1>
+  {quotation.order_no && (
+    <p className="text-sm text-muted-foreground">
+      Order No: <span className="font-medium text-foreground">{quotation.order_no}</span>
+    </p>
+  )}
+  <p className="text-sm text-muted-foreground mt-0.5">
+  {formatDate(quotation.created_at)}
               </p>
             </div>
           </div>

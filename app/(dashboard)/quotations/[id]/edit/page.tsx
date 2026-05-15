@@ -28,6 +28,7 @@ export default function EditQuotationPage() {
   const [customerDistrict, setCustomerDistrict] = useState("")
   const [customerState, setCustomerState] = useState("")
   const [customerPinCode, setCustomerPinCode] = useState("")
+  const [orderNo, setOrderNo] = useState("")
   const [subject, setSubject] = useState("")
   const [bodyText, setBodyText] = useState("")
   const [items, setItems] = useState<QuotationItem[]>([])
@@ -63,6 +64,7 @@ export default function EditQuotationPage() {
       setCustomerDistrict(quotation.client_district || "")
       setCustomerState(quotation.client_state || "")
       setCustomerPinCode(quotation.client_pin_code || "")
+      setOrderNo(quotation.order_no || "")
       setSubject(quotation.subject || "")
       setBodyText(quotation.body_text || "")
       setItems(quotation.items)
@@ -136,6 +138,7 @@ export default function EditQuotationPage() {
           client_district: customerDistrict,
           client_state: customerState,
           client_pin_code: customerPinCode,
+          order_no: orderNo || null,
           subject: subject,
           body_text: bodyText,
           items: items,
@@ -200,6 +203,18 @@ export default function EditQuotationPage() {
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Enter customer name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="order-no">
+                Order Number <span className="text-xs text-muted-foreground">(Optional)</span>
+              </Label>
+              <Input
+                id="order-no"
+                value={orderNo}
+                onChange={(e) => setOrderNo(e.target.value)}
+                placeholder="e.g. PO-2026-001"
               />
             </div>
 
