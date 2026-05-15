@@ -388,12 +388,23 @@ export default function ViewQuotationPage() {
       doc.setFont("helvetica", "bold")
       doc.setTextColor(0, 0, 0)
       doc.text(safeStr(quotation.quote_no ?? ("QT-" + quotation.id)), margin, y)
+      doc.text(`DATE: ${formattedDate}`, pageW - margin, y, { align: "right" })
+      y += 5
+
+      if (quotation.order_no) {
+        doc.setFontSize(9)
+        doc.setFont("helvetica", "normal")
+        doc.setTextColor(80, 80, 80)
+        doc.text(`Order No: ${safeStr(quotation.order_no)}`, pageW - margin, y, { align: "right" })
+        doc.setTextColor(0, 0, 0)
+        y += 5
+      } else {
+        y += 3
+      }
 
       const formattedDate = quotation.created_at 
         ? new Date(quotation.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })
         : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })
-      doc.text(`DATE: ${formattedDate}`, pageW - margin, y, { align: "right" })
-      y += 8
 
       // ===== CLIENT BLOCK =====
       doc.setFontSize(10)
@@ -532,13 +543,13 @@ export default function ViewQuotationPage() {
   }
 
   // ===== IN WORDS =====
-  y += 8
-  doc.setFont('helvetica', 'normal')
+  y += 4
+  doc.setFont('helvetica', 'bold')
   doc.setFontSize(9)
   doc.setTextColor(0, 0, 0)
   const finalAmount = includeGst ? grandTotal : subtotal
-  doc.text('Rupees ' + toWords(finalAmount) + ' Only', margin, y)
-  y += 6
+  doc.text(('RUPEES ' + toWords(finalAmount) + ' ONLY').toUpperCase(), margin, y)
+  y += 5
 
   // ===== TERMS & CONDITIONS =====
       if (quotation.notes) {
