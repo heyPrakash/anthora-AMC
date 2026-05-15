@@ -546,7 +546,7 @@ export default function ViewQuotationPage() {
       doc.setTextColor(0, 0, 0)
       const inWordsAmount = includeGst ? grandTotal : subtotal
       doc.text(('RUPEES ' + toWords(inWordsAmount) + ' ONLY').toUpperCase(), margin, y)
-      y += 5
+      y += 20
  
       // ===== TERMS & CONDITIONS =====
       if (quotation.notes) {
