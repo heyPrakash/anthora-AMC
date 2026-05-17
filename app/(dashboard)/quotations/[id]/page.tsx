@@ -585,6 +585,10 @@ export default function ViewQuotationPage() {
  
       // ===== FOOTER =====
       // Right-aligned signature block
+      if (y + 40 > pageH - 10) {
+        doc.addPage()
+        y = margin
+      }
       y += 14
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(9)
