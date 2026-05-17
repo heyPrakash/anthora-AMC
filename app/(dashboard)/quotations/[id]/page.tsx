@@ -549,6 +549,10 @@ export default function ViewQuotationPage() {
       y += 20
  
       // ===== TERMS & CONDITIONS =====
+     if (y + 20 > pageH - 10) {
+       doc.addPage()
+       y = margin
+     }
       if (quotation.notes) {
         doc.setFontSize(9)
         doc.setFont("helvetica", "bold")
@@ -564,6 +568,10 @@ export default function ViewQuotationPage() {
       y += 4
 
       // ===== TAX INFORMATION =====
+     if (y + 25 > pageH - 10) {
+        doc.addPage()
+        y = margin
+      }
       doc.setFontSize(9)
       doc.setFont("helvetica", "bold")
       doc.setTextColor(0, 0, 0)
