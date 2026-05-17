@@ -542,7 +542,7 @@ export default function ViewQuotationPage() {
       // FIX: renamed to inWordsAmount to avoid any variable conflict
       y -= 11
       doc.setFont('helvetica', 'bold')
-      doc.setFontSize(9)
+      doc.setFontSize(7)
       doc.setTextColor(0, 0, 0)
       const inWordsAmount = includeGst ? grandTotal : subtotal
       doc.text(('RUPEES ' + toWords(inWordsAmount) + ' ONLY').toUpperCase(), margin, y)
