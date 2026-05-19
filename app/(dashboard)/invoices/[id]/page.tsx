@@ -359,7 +359,7 @@ y += 6
       // Due date on second line on right side
       doc.setFontSize(9)
       doc.setTextColor(220, 38, 38)
-      doc.text('Due: ' + safeDate(invoice.due_date),
+      doc.text('Valid Till:' + safeDate(invoice.due_date),
         pageW - margin, y, { align: 'right' })
       
       y += 5
