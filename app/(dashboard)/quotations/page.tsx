@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
   Table,
@@ -14,13 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+
 import { supabase, type Quotation } from "@/lib/supabase"
 import { useAuth } from "@/lib/auth-context"
 import { Plus, Search, Eye, Trash2, Edit } from "lucide-react"
@@ -37,18 +30,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-function getStatusBadge(status: string) {
-  const statusLower = (status || "").toLowerCase()
-  const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
-    draft: { bg: "bg-slate-100", text: "text-slate-700", label: "Draft" },
-    sent: { bg: "bg-blue-100", text: "text-blue-700", label: "Sent" },
-    accepted: { bg: "bg-green-100", text: "text-green-700", label: "Accepted" },
-    rejected: { bg: "bg-red-100", text: "text-red-700", label: "Rejected" },
-    expired: { bg: "bg-orange-100", text: "text-orange-700", label: "Expired" },
-  }
-  const config = statusConfig[statusLower] || statusConfig.draft
-  return <Badge className={`${config.bg} ${config.text} border-0`}>{config.label}</Badge>
-}
+
 
 export default function QuotationsPage() {
   const { user } = useAuth()
@@ -56,7 +38,6 @@ export default function QuotationsPage() {
   const [filteredQuotations, setFilteredQuotations] = useState<Quotation[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterStatus, setFilterStatus] = useState("all")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [quotationToDelete, setQuotationToDelete] = useState<Quotation | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -76,16 +57,12 @@ export default function QuotationsPage() {
       )
     }
 
-    if (filterStatus !== "all") {
-      filtered = filtered.filter(q => (q.status || "").toLowerCase() === filterStatus.toLowerCase())
-    }
-
     setFilteredQuotations(filtered)
   }
 
   useEffect(() => {
     handleFilter()
-  }, [searchTerm, filterStatus, quotations])
+  }, [searchTerm, quotations])
 
   const handleDelete = async () => {
   if (!quotationToDelete) return
@@ -165,19 +142,6 @@ export default function QuotationsPage() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="sent">Sent</SelectItem>
-                  <SelectItem value="accepted">Accepted</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="expired">Expired</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </CardContent>
         </Card>
@@ -187,7 +151,7 @@ export default function QuotationsPage() {
           <CardHeader>
             <CardTitle>All Quotations</CardTitle>
             <CardDescription>
-              You have {filteredQuotations.length} quotations {filterStatus !== "all" ? "matching filters" : "in total"}
+              You have {filteredQuotations.length} quotations in total
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -206,7 +170,6 @@ export default function QuotationsPage() {
                       <TableHead>Client Name</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Grand Total</TableHead>
-                      <TableHead>Status</TableHead>
                       <TableHead className="w-[80px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -223,7 +186,6 @@ export default function QuotationsPage() {
                           })}
                         </TableCell>
                         <TableCell>{formatCurrency(quotation.grand_total)}</TableCell>
-                        <TableCell>{getStatusBadge(quotation.status)}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
                             <Link href={`/quotations/${quotation.id}`}>
