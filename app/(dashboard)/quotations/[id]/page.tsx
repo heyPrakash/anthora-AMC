@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { supabase, type Quotation, type CompanyProfile } from "@/lib/supabase"
 import { useAuth } from "@/lib/auth-context"
 import {
@@ -13,7 +12,6 @@ import {
   Download,
   MessageCircle,
   Edit,
-  ChevronDown,
   Loader2,
   FileText,
 } from "lucide-react"
@@ -21,12 +19,6 @@ import { toast } from "sonner"
 import Link from "next/link"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -55,14 +47,7 @@ function formatDate(dateStr: string | null | undefined): string {
   })
 }
  
-function getStatusBadge(status: string) {
-  const s = (status ?? "draft").toLowerCase()
-  if (s === "draft") return <Badge className="bg-slate-100 text-slate-700 border-0">Draft</Badge>
-  if (s === "sent") return <Badge className="bg-blue-100 text-blue-700 border-0">Sent</Badge>
-  if (s === "accepted") return <Badge className="bg-green-100 text-green-700 border-0">Accepted</Badge>
-  if (s === "rejected") return <Badge className="bg-red-100 text-red-700 border-0">Rejected</Badge>
-  return <Badge className="bg-slate-100 text-slate-700 border-0">{status}</Badge>
-}
+
  
 function hexToRgb(hex: string): [number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
@@ -218,24 +203,7 @@ export default function ViewQuotationPage() {
     }
   }
  
-  const handleUpdateStatus = async (newStatus: string) => {
-    if (!quotation) return
-    setUpdating(true)
-    try {
-      const { error } = await supabase
-        .from("quotations")
-        .update({ status: newStatus })
-        .eq("id", quotation.id)
-      if (error) throw error
-      setQuotation({ ...quotation, status: newStatus as Quotation["status"] })
-      toast.success(`Status updated to ${newStatus}`)
-    } catch (err) {
-      console.error(err)
-      toast.error("Failed to update status")
-    } finally {
-      setUpdating(false)
-    }
-  }
+
  
   const getMappedItems = () => {
     return (quotation?.items ?? []).map((item: any, index: number) => ({
@@ -682,8 +650,6 @@ y += 6
           </div>
  
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-            {getStatusBadge(quotation.status)}
- 
             <Button
               onClick={handleDownloadPdf}
               disabled={generatingPdf}
@@ -714,57 +680,23 @@ y += 6
               </Button>
             </Link>
  
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={updating}>
-                  {updating ? (
-                    <Loader2 className="mr-1.5 size-4 animate-spin" />
-                  ) : (
-                    <ChevronDown className="mr-1.5 size-4" />
-                  )}
-                  Change Status
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleUpdateStatus("Draft")}>
-                  <span className="size-2 rounded-full bg-slate-400 mr-2 inline-block" />
-                  Draft
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleUpdateStatus("Sent")}>
-                  <span className="size-2 rounded-full bg-blue-500 mr-2 inline-block" />
-                  Sent
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleUpdateStatus("Accepted")}>
-                  <span className="size-2 rounded-full bg-green-500 mr-2 inline-block" />
-                  Accepted
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleUpdateStatus("Rejected")}>
-                  <span className="size-2 rounded-full bg-red-500 mr-2 inline-block" />
-                  Rejected
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
- 
-            {statusLower === "accepted" && (
-              quotation.invoice_id ? (
-                <Button
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  size="sm"
-                  onClick={() => router.push(`/invoices/${quotation.invoice_id}`)}
-                >
-                  <FileText className="mr-1.5 size-4" />
-                  View Invoice
-                </Button>
-              ) : (
-                <Button
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                  size="sm"
-                  onClick={handleOpenConvertModal}
-                >
-                  <FileText className="mr-1.5 size-4" />
-                  Convert to Invoice
-                </Button>
-              )
+            {quotation.invoice_id ? (
+              <Button
+                className="bg-green-600 hover:bg-green-700 text-white"
+                size="sm"
+                onClick={() => router.push(`/invoices/${quotation.invoice_id}`)}
+              >
+                <FileText className="mr-1.5 size-4" />
+                View Invoice
+              </Button>
+            ) : (
+              <Button
+                onClick={() => setShowConvertModal(true)}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                <FileText className="mr-2 size-4" />
+                Convert to Invoice
+              </Button>
             )}
           </div>
         </div>
