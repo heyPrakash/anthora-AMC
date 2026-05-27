@@ -699,7 +699,7 @@ y += 6
               </Button>
             ) : (
               <Button
-                onClick={() => setShowConvertModal(true)}
+                onClick={handleOpenConvertModal}
                 className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 <FileText className="mr-2 size-4" />
