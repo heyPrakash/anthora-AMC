@@ -933,7 +933,7 @@ y += 6
  
             {/* Due Date */}
             <div className="space-y-2">
-              <Label htmlFor="due-date">Due Date</Label>
+              <Label htmlFor="due-date">Valid till</Label>
               <Input
                 id="due-date"
                 type="date"
