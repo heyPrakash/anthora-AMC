@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { supabase } from "@/lib/supabase"
+import { supabase, getDaysUntilService } from "@/lib/supabase"
 import { useAuth } from "@/lib/auth-context"
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -56,6 +57,7 @@ interface ContractRow {
   service_type: string
   contracts_price: number | null
   customer_id: string
+  next_service_date: string 
 }
 
 const CHART_COLORS = ["#6366f1", "#22c55e", "#f59e0b", "#ef4444", "#3b82f6", "#ec4899", "#14b8a6"]
@@ -255,7 +257,7 @@ export default function ReportsPage() {
       const [contractsRes, currentHistoryRes, prevHistoryRes, allHistoryRes] = await Promise.all([
         supabase
           .from("contracts")
-          .select("id, status, service_type, contracts_price, customer_id")
+          .select("id, status, service_type, contracts_price, customer_id, next_service_date")
           .eq("user_id", user.id),
         supabase
           .from("service_history")
@@ -285,7 +287,10 @@ export default function ReportsPage() {
       setStats({
         totalServices: getTotalServices(cHistory),
         completedServices: getCompletedServices(cHistory),
-        activeContracts: contracts.filter(c => c.status === "active").length,
+        activeContracts: contracts.filter(c => {
+  const days = getDaysUntilService(c.next_service_date)
+  return c.status === "active" && days > 7
+}).length,
         totalContracts: contracts.length,
         totalEarnings: getTotalEarnings(cHistory, contractMap),
         prevTotalServices: getTotalServices(pHistory),
@@ -367,7 +372,6 @@ export default function ReportsPage() {
         <Activity className="size-6 text-primary" />
       </div>
     </div>
-    <p className="mt-2 text-xs text-muted-foreground">All time</p>
   </CardContent>
 </Card>
              
