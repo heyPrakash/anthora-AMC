@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { supabase } from "@/lib/supabase"
 import { supabase, getDaysUntilService } from "@/lib/supabase"
 import { useAuth } from "@/lib/auth-context"
 import {
