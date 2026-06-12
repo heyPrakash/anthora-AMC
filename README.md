@@ -1,4 +1,4 @@
-# Remindi 🔧
+# Remindi 
 
 **AMC Management Software for Indian Service Contractors**
 
