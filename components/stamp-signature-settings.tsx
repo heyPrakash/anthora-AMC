@@ -9,32 +9,54 @@ import { supabase } from "@/lib/supabase"
 import { Save, Upload, Loader2, X } from "lucide-react"
 import { toast } from "sonner"
 
-// The storage file path is always fixed — no timestamps in the PATH
-// We only use timestamps in the <img src> tag to bust browser cache
+const MAX_FILE_SIZE_MB = 2
+const MAX_WIDTH_PX = 1536
+const MAX_HEIGHT_PX = 1536
+
+// Fixed storage path per user — no extension, no timestamps
 const STAMP_FILE_PATH = (userId: string) => `${userId}/stamp`
+
+// Validate image dimensions using a browser Image object
+const validateImageDimensions = (file: File): Promise<{ valid: boolean; width: number; height: number }> => {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      resolve({
+        valid: img.width <= MAX_WIDTH_PX && img.height <= MAX_HEIGHT_PX,
+        width: img.width,
+        height: img.height,
+      })
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      resolve({ valid: false, width: 0, height: 0 })
+    }
+    img.src = url
+  })
+}
 
 export function StampSignatureSettings() {
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  // BUG FIX 1: Store only the clean storage PATH in DB, not the full URL with ?t=
-  // On load, we generate a fresh signed URL from the path so it always works
+  // Clean storage path saved in DB (e.g. "user-id/stamp")
   const [stampStoragePath, setStampStoragePath] = useState<string | null>(null)
 
-  // The URL we actually show in <img> — generated fresh each time page loads
+  // Public URL for displaying the saved stamp
   const [displayUrl, setDisplayUrl] = useState<string | null>(null)
 
-  // Pending file — selected but NOT yet saved
+  // Pending file selected but NOT yet saved
   const [newStampFile, setNewStampFile] = useState<File | null>(null)
 
-  // Local base64 preview shown while a new file is selected but not saved
+  // Local base64 preview while file is pending
   const [localPreview, setLocalPreview] = useState<string | null>(null)
 
   const stampInputRef = useRef<HTMLInputElement>(null)
 
-  // BUG FIX 2: On load, fetch the storage PATH from DB
-  // Then generate a fresh signed URL so the image always loads even after navigation
+  // Load existing stamp path from DB and build public URL
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -51,22 +73,13 @@ export function StampSignatureSettings() {
         if (data?.stamp_url) {
           setStampStoragePath(data.stamp_url)
 
-          // BUG FIX 3: Generate a fresh signed URL every time settings page loads
-          // This fixes "image not showing after navigation" because signed URLs
-          // are time-limited and the stored path always generates a fresh one
-          const { data: signedData, error: signedError } = await supabase.storage
+          // Bucket is public — getPublicUrl works reliably on every reload
+          const { data: publicData } = supabase.storage
             .from('company-assets')
-            .createSignedUrl(data.stamp_url, 60 * 60) // 1 hour expiry
+            .getPublicUrl(data.stamp_url)
 
-          if (!signedError && signedData?.signedUrl) {
-            setDisplayUrl(signedData.signedUrl)
-          } else {
-            // Fallback: if bucket is public, getPublicUrl also works
-            const { data: publicData } = supabase.storage
-              .from('company-assets')
-              .getPublicUrl(data.stamp_url)
-            setDisplayUrl(publicData.publicUrl)
-          }
+          // Add cache-busting only for display, NOT stored in DB
+          setDisplayUrl(`${publicData.publicUrl}?t=${Date.now()}`)
         }
       } catch (error) {
         console.error('Error loading stamp:', error)
@@ -78,11 +91,12 @@ export function StampSignatureSettings() {
     loadProfile()
   }, [user?.id])
 
-  // Step 1: User selects a file — show local preview only, nothing uploaded yet
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Step 1: User selects file — validate then show local preview only
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
+    // Validate file type
     const allowedTypes = ['image/png', 'image/jpeg', 'image/webp']
     if (!allowedTypes.includes(file.type)) {
       toast.error('Please upload PNG, JPG, or WEBP only')
@@ -90,15 +104,25 @@ export function StampSignatureSettings() {
       return
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('File size must be less than 2MB')
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      toast.error(`File size must be less than ${MAX_FILE_SIZE_MB}MB`)
       if (stampInputRef.current) stampInputRef.current.value = ''
       return
     }
 
-    setNewStampFile(file)
+    // Validate image dimensions
+    const { valid, width, height } = await validateImageDimensions(file)
+    if (!valid) {
+      toast.error(
+        `Image too large: ${width}×${height}px. Maximum allowed is ${MAX_WIDTH_PX}×${MAX_HEIGHT_PX}px`
+      )
+      if (stampInputRef.current) stampInputRef.current.value = ''
+      return
+    }
 
-    // Show local base64 preview immediately — no network call yet
+    // All validations passed — store file and show local preview
+    setNewStampFile(file)
     const reader = new FileReader()
     reader.onload = (event) => {
       setLocalPreview(event.target?.result as string)
@@ -106,17 +130,15 @@ export function StampSignatureSettings() {
     reader.readAsDataURL(file)
   }
 
-  // Step 2: User clicks Save Stamp — upload file and save PATH (not URL) to DB
+  // Step 2: User clicks Save — upload and save PATH to DB
   const handleSaveStamp = async () => {
     if (!newStampFile || !user?.id) return
 
     setSaving(true)
     try {
-      // BUG FIX 4: Always use the same fixed path per user
-      // This ensures upsert always overwrites the same file cleanly
-      // Extension doesn't matter since we control the path
       const filePath = STAMP_FILE_PATH(user.id)
 
+      // Upload to Supabase Storage — upsert overwrites the same path cleanly
       const { error: uploadError } = await supabase.storage
         .from('company-assets')
         .upload(filePath, newStampFile, {
@@ -125,13 +147,16 @@ export function StampSignatureSettings() {
         })
 
       if (uploadError) {
-        toast.error('Upload failed: ' + uploadError.message)
+        // Give a clear message if bucket doesn't exist
+        if (uploadError.message.toLowerCase().includes('bucket')) {
+          toast.error('Storage bucket not found. Please create the "company-assets" bucket in Supabase Storage first.')
+        } else {
+          toast.error('Upload failed: ' + uploadError.message)
+        }
         return
       }
 
-      // BUG FIX 5: Save only the clean FILE PATH to DB — not the URL
-      // Saving the URL with ?t= timestamps causes the image to break on reload
-      // because next time we fetch a different signed URL anyway
+      // Save only the clean path to DB (no URLs, no timestamps)
       const { error: dbError } = await supabase
         .from('company_profile')
         .update({ stamp_url: filePath })
@@ -142,18 +167,16 @@ export function StampSignatureSettings() {
         return
       }
 
-      // Generate a fresh signed URL just for display right now
-      const { data: signedData, error: signedError } = await supabase.storage
+      // Get public URL for immediate display (with cache-bust for browser)
+      const { data: publicData } = supabase.storage
         .from('company-assets')
-        .createSignedUrl(filePath, 60 * 60)
+        .getPublicUrl(filePath)
 
-      const freshDisplayUrl = (!signedError && signedData?.signedUrl)
-        ? signedData.signedUrl
-        : localPreview! // fallback to local base64 if signing fails
+      const freshUrl = `${publicData.publicUrl}?t=${Date.now()}`
 
-      // Commit state
+      // Commit all state
       setStampStoragePath(filePath)
-      setDisplayUrl(freshDisplayUrl)
+      setDisplayUrl(freshUrl)
       setNewStampFile(null)
       setLocalPreview(null)
       if (stampInputRef.current) stampInputRef.current.value = ''
@@ -166,14 +189,14 @@ export function StampSignatureSettings() {
     }
   }
 
-  // Cancel pending selection — discard local preview, keep existing saved stamp
+  // Cancel pending selection — discard preview, keep existing saved stamp
   const handleCancelSelect = () => {
     setNewStampFile(null)
     setLocalPreview(null)
     if (stampInputRef.current) stampInputRef.current.value = ''
   }
 
-  // Remove stamp from DB
+  // Remove stamp from DB (does not delete from storage)
   const handleRemoveStamp = async () => {
     if (!user?.id) return
     try {
@@ -199,15 +222,16 @@ export function StampSignatureSettings() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <div className="text-muted-foreground">Loading stamp settings...</div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+            Loading stamp settings...
+          </div>
         </CardContent>
       </Card>
     )
   }
 
-  // What to show in the image box:
-  // localPreview = new file selected, not saved yet (base64)
-  // displayUrl   = saved stamp, signed URL generated on load
+  // Show local base64 preview if file is pending, otherwise show saved URL
   const imageToShow = localPreview ?? displayUrl
 
   return (
@@ -215,14 +239,15 @@ export function StampSignatureSettings() {
       <CardHeader>
         <CardTitle>Company Stamp</CardTitle>
         <CardDescription>
-          Upload your company stamp — it will appear on quotation and invoice PDFs when enabled
+          Upload your company stamp — it will appear on quotation and invoice PDFs when enabled.
+          Max size: {MAX_WIDTH_PX}×{MAX_HEIGHT_PX}px, {MAX_FILE_SIZE_MB}MB.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="max-w-sm space-y-3">
           <Label>Company Stamp</Label>
 
-          {/* STATE 1: Nothing — show upload dropzone */}
+          {/* STATE 1: No image at all — show upload dropzone */}
           {!imageToShow && (
             <label htmlFor="stamp-upload" className="cursor-pointer block">
               <input
@@ -236,12 +261,14 @@ export function StampSignatureSettings() {
               <div className="border-2 border-dashed border-border rounded-lg p-8 text-center bg-secondary/30 hover:bg-secondary/50 transition-colors">
                 <Upload className="mx-auto size-8 mb-2 text-muted-foreground" />
                 <p className="text-sm font-medium text-foreground">Click to upload stamp</p>
-                <p className="text-xs text-muted-foreground mt-1">PNG, JPG, or WEBP, max 2MB</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  PNG, JPG, or WEBP · max {MAX_FILE_SIZE_MB}MB · max {MAX_WIDTH_PX}×{MAX_HEIGHT_PX}px
+                </p>
               </div>
             </label>
           )}
 
-          {/* STATE 2 & 4: Image exists (preview or saved) — show it */}
+          {/* STATE 2 & 4: Image exists (local preview or saved) — show it */}
           {imageToShow && (
             <div className="flex items-center justify-center w-full h-40 rounded-lg border border-border overflow-hidden bg-secondary">
               <img
@@ -252,7 +279,7 @@ export function StampSignatureSettings() {
             </div>
           )}
 
-          {/* STATE 3: New file selected, NOT saved yet — Save + Cancel */}
+          {/* STATE 3: New file selected, NOT saved — Save + Cancel */}
           {newStampFile && (
             <div className="flex gap-2">
               <Button
@@ -286,7 +313,7 @@ export function StampSignatureSettings() {
             </div>
           )}
 
-          {/* STATE 4: Stamp saved, no pending — Change + Remove */}
+          {/* STATE 4: Stamp saved, no pending file — Change + Remove */}
           {stampStoragePath && !newStampFile && (
             <div className="flex gap-2">
               <label htmlFor="stamp-upload-change" className="flex-1 cursor-pointer">
