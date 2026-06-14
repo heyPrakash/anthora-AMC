@@ -193,6 +193,16 @@ export default function ContractsPage() {
       const pageH = 210
       const margin = 14
 
+      // Truncate text with an ellipsis if it exceeds the available column width
+      const truncateToWidth = (text: string, maxWidth: number): string => {
+        if (doc.getTextWidth(text) <= maxWidth) return text
+        let truncated = text
+        while (truncated.length > 0 && doc.getTextWidth(truncated + '...') > maxWidth) {
+          truncated = truncated.slice(0, -1)
+        }
+        return truncated + '...'
+      }
+
       const skyBlue: [number, number, number]    = [41, 171, 226]
       const darkHeader: [number, number, number] = [22, 45, 60]
       const white: [number, number, number]      = [255, 255, 255]
@@ -336,7 +346,7 @@ export default function ContractsPage() {
             doc.setTextColor(...textDark)
             doc.setFont('helvetica', 'normal')
           }
-          doc.text(cellValue, x + 2, currentY + 6, { maxWidth: col.width - 4 })
+          doc.text(truncateToWidth(cellValue, col.width - 4), x + 2, currentY + 6)
           x += col.width
         }
 
