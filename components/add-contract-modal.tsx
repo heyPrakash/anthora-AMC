@@ -25,18 +25,6 @@ interface AddContractModalProps {
   userId: string
 }
 
-const SERVICE_TYPES = [
-  'AC',
-  'Lift',
-  'RO Water Purifier',
-  'CCTV',
-  'Pest Control',
-  'Generator',
-  'Fire Safety',
-  'UPS',
-  'Other'
-]
-
 const FREQUENCY_OPTIONS = [
   { value: '30', label: '30 days (Monthly)' },
   { value: '60', label: '60 days (Every 2 months)' },
@@ -67,7 +55,6 @@ export function AddContractModal({
   const [formData, setFormData] = useState({
     contractName: '',
     customerId: '',
-    serviceType: '',
     frequency: '',
     startDate: '',
     status: 'active',
@@ -96,7 +83,6 @@ export function AddContractModal({
       setFormData({
         contractName: editingContract.contract_name,
         customerId: editingContract.customer_id,
-        serviceType: editingContract.service_type,
         frequency: editingContract.frequency_days.toString(),
         startDate: editingContract.start_date,
         status: editingContract.status,
@@ -108,7 +94,6 @@ export function AddContractModal({
       setFormData({
         contractName: '',
         customerId: '',
-        serviceType: '',
         frequency: '',
         startDate: '',
         status: 'active',
@@ -147,9 +132,6 @@ export function AddContractModal({
     if (!formData.customerId) {
       newErrors.customerId = 'Customer is required'
     }
-    if (!formData.serviceType) {
-      newErrors.serviceType = 'Service Type is required'
-    }
     if (!formData.frequency) {
       newErrors.frequency = 'Frequency is required'
     }
@@ -175,7 +157,7 @@ export function AddContractModal({
         user_id: userId,
         customer_id: formData.customerId,
         contract_name: formData.contractName,
-        service_type: formData.serviceType,
+        service_type: 'Other',
         frequency_days: parseInt(formData.frequency),
         start_date: formData.startDate,
         next_service_date: nextServiceDate,
@@ -277,33 +259,6 @@ export function AddContractModal({
             </Select>
             {errors.customerId && (
               <p className="text-xs text-red-500">{errors.customerId}</p>
-            )}
-          </div>
-
-          {/* Service Type */}
-          <div className="space-y-2">
-            <Label htmlFor="serviceType">
-              Service Type <span className="text-red-500">*</span>
-            </Label>
-            <Select value={formData.serviceType} onValueChange={(value) => {
-              setFormData({ ...formData, serviceType: value })
-              if (errors.serviceType) {
-                setErrors({ ...errors, serviceType: '' })
-              }
-            }}>
-              <SelectTrigger id="serviceType" className={errors.serviceType ? 'border-red-500' : ''}>
-                <SelectValue placeholder="Select service type" />
-              </SelectTrigger>
-              <SelectContent>
-                {SERVICE_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.serviceType && (
-              <p className="text-xs text-red-500">{errors.serviceType}</p>
             )}
           </div>
 
