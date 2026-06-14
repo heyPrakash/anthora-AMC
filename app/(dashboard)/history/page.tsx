@@ -14,13 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { supabase, type ServiceHistory, type Contract, type Technician, type Customer } from "@/lib/supabase"
 import { useAuth } from "@/lib/auth-context"
 import { Search, Download, Calendar, CheckCircle2, XCircle, Clock } from "lucide-react"
@@ -29,7 +22,6 @@ import { ExportModal } from "@/components/export-modal"
 interface ServiceRecord extends ServiceHistory {
   customerName: string
   contractName: string
-  serviceType: string
   technicianName: string
   contractPrice: number | null
 }
@@ -68,7 +60,6 @@ export default function ServiceHistoryPage() {
   const [filteredRecords, setFilteredRecords] = useState<ServiceRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterType, setFilterType] = useState("all")
   const [exportModalOpen, setExportModalOpen] = useState(false)
 
   useEffect(() => {
@@ -90,7 +81,6 @@ export default function ServiceHistoryPage() {
             ...record,
             customerName: customer?.name || 'Unknown',
             contractName: contract?.contract_name || 'Unknown',
-            serviceType: contract?.service_type || 'Unknown',
             technicianName: technician?.name || 'Unknown',
             contractPrice: contract?.contracts_price ?? null
           }
@@ -119,16 +109,12 @@ export default function ServiceHistoryPage() {
       )
     }
 
-    if (filterType !== 'all') {
-      filtered = filtered.filter(r => r.serviceType.toLowerCase() === filterType.toLowerCase())
-    }
-
     setFilteredRecords(filtered)
   }
 
   useEffect(() => {
     handleFilter()
-  }, [searchTerm, filterType, serviceRecords])
+  }, [searchTerm, serviceRecords])
 
   return (
     <DashboardLayout>
@@ -156,27 +142,11 @@ export default function ServiceHistoryPage() {
                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Search by customer, technician, or service type..."
+                  placeholder="Search by customer, technician, or contract..."
                   className="pl-10"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-              </div>
-              <div className="flex gap-2">
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Service Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="ac">AC</SelectItem>
-                    <SelectItem value="cctv">CCTV</SelectItem>
-                    <SelectItem value="lift">Lift</SelectItem>
-                    <SelectItem value="fire-safety">Fire Safety</SelectItem>
-                    <SelectItem value="generator">Generator</SelectItem>
-                    <SelectItem value="ups">UPS</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
           </CardContent>
@@ -187,7 +157,7 @@ export default function ServiceHistoryPage() {
           <CardHeader>
             <CardTitle>Service Records</CardTitle>
             <CardDescription>
-              Showing {filteredRecords.length} records {filterType !== 'all' ? 'matching filter' : 'total'}
+              Showing {filteredRecords.length} records total
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -201,7 +171,6 @@ export default function ServiceHistoryPage() {
                   <TableRow>
                     <TableHead>Customer</TableHead>
                     <TableHead>Contract</TableHead>
-                    <TableHead>Type</TableHead>
                     <TableHead>Technician</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Price</TableHead>
@@ -214,11 +183,6 @@ export default function ServiceHistoryPage() {
                     <TableRow key={record.id}>
                       <TableCell className="font-medium">{record.customerName}</TableCell>
                       <TableCell>{record.contractName}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="font-normal">
-                          {record.serviceType}
-                        </Badge>
-                      </TableCell>
                       <TableCell>{record.technicianName}</TableCell>
                       <TableCell>
                         <div className="flex flex-col">
