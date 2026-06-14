@@ -157,7 +157,6 @@ export function AddContractModal({
         user_id: userId,
         customer_id: formData.customerId,
         contract_name: formData.contractName,
-        service_type: 'Other',
         frequency_days: parseInt(formData.frequency),
         start_date: formData.startDate,
         next_service_date: nextServiceDate,
