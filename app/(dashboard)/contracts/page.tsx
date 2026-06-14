@@ -414,7 +414,7 @@ export default function ContractsPage() {
           <CardHeader>
             <CardTitle>All Contracts</CardTitle>
             <CardDescription>
-              You have {filteredContracts.length} contracts {filterType !== 'all' || filterStatus !== 'all' ? 'matching filters' : 'in total'}
+              You have {filteredContracts.length} contracts {filterStatus !== 'all' ? 'matching filters' : 'in total'}
             </CardDescription>
           </CardHeader>
           <CardContent>
