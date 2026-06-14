@@ -221,7 +221,7 @@ export default function ContractsPage() {
         { header: 'Frequency',     dataKey: 'frequency_days',    width: 26 },
         { header: 'Price (Rs.)',     dataKey: 'contracts_price',   width: 26 },
         { header: 'Start Date',    dataKey: 'start_date',        width: 30 },
-        { header: 'Next Service',  dataKey: 'next_service_date', width: 30 },
+        { header: 'Servicing Date',  dataKey: 'next_service_date', width: 30 },
         { header: 'Status',        dataKey: '__status',          width: 24 },
       ]
       const tableWidth = columns.reduce((s, c) => s + c.width, 0)
